@@ -52,9 +52,11 @@ def parse_response(raw: bytes) -> tuple[dict, list[dict]]:
         raise ValueError("API 응답이 정상 결과 또는 예상한 구조가 아닙니다.") from None
 
 
-def fetch_page(key: str, category: str, page: int, size: int) -> tuple[bytes, dict, list[dict]]:
+def fetch_page(key: str, category: str | None, page: int, size: int) -> tuple[bytes, dict, list[dict]]:
     params = {"serviceKey": key, "type": "json", "pageNo": page,
-              "numOfRows": size, "FOOD_CAT1_NM": category}
+              "numOfRows": size}
+    if category is not None:
+        params["FOOD_CAT1_NM"] = category
     try:
         with urlopen(ENDPOINT + "?" + urlencode(params), timeout=40) as response:
             raw = response.read()
@@ -69,7 +71,7 @@ def fetch_page(key: str, category: str, page: int, size: int) -> tuple[bytes, di
     if len(items) > size or int(body["pageNo"]) != page:
         raise ValueError("응답 건수 또는 페이지가 요청과 다릅니다.")
     # 필터가 부분 일치일 수 있으므로 요청값과 실제 분류의 일치를 검증한다.
-    if any(r.get("FOOD_CAT1_NM") != category for r in items):
+    if category is not None and any(r.get("FOOD_CAT1_NM") != category for r in items):
         raise ValueError("분류 필터와 실제 응답 분류가 다릅니다.")
     return raw, body, items
 
