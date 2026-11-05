@@ -60,6 +60,8 @@ def prepare_sample(rows: list[dict], intake_g: float = 150, count: int = 5) -> l
             "intake_g": intake_g,
             "source_name": row["SRC_NM"],
             "reference_date": row["CRTR_YMD"],
+            "created_date": row.get("CRT_YMD"),
+            "updated_date": row.get("UPDATE_DATE"),
             "generation_method": row["DATA_PROD_NM"],
             "nutrients": nutrients,
         })
