@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -20,6 +21,23 @@ FIELD_MAP = {
     "AMT_NUM8": ("FIBTG", "식이섬유", "g"),
     "AMT_NUM13": ("NAT", "나트륨", "mg"),
 }
+
+
+def parse_nutrient_value(value) -> float | None:
+    """빈 값은 None, 올바른 천 단위 쉼표만 제거한다. 특수 표기는 거부한다."""
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return None
+    if type(value) not in (str, int, float):
+        raise TypeError("영양성분은 숫자 또는 숫자 문자열이어야 합니다.")
+    if isinstance(value, str):
+        value = value.strip()
+        if "," in value:
+            if not re.fullmatch(r"[0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?", value):
+                raise ValueError("천 단위 구분 형식이 올바르지 않습니다.")
+            value = value.replace(",", "")
+    number = float(value)
+    calculate_nutrient(number, 100)
+    return number
 
 
 def normalize_rows(rows: list[dict]) -> tuple[list[dict], dict]:
@@ -46,14 +64,11 @@ def normalize_rows(rows: list[dict]) -> tuple[list[dict], dict]:
         }
         for source, (target, _, _) in FIELD_MAP.items():
             value = row[source]  # 열 자체가 없으면 오류. 측정값 결측과 구분한다.
-            if value is None or (isinstance(value, str) and not value.strip()):
+            number = parse_nutrient_value(value)
+            if number is None:
                 food[target] = None
                 counts[target]["missing"] += 1
                 continue
-            if type(value) not in (str, int, float):
-                raise TypeError("영양성분은 숫자 또는 숫자 문자열이어야 합니다.")
-            number = float(value)
-            calculate_nutrient(number, 100)  # 음수·비유한 값 거부. 단위는 변경하지 않는다.
             food[target] = number
             counts[target]["zero"] += int(number == 0)
         foods.append(food)
