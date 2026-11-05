@@ -1,3 +1,5 @@
+import { Profile, History, Insights, emptyData, today, storageKey } from './Wellness'
+import type { WellnessData, Calculation } from './Wellness'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight,
@@ -8,9 +10,6 @@ type Food = { food_code: string; food_name: string; basis: string;
   source_name: string | null; updated_date: string | null }
 type SearchData = { total: number; offset: number; limit: number; items: Food[] }
 type Entry = { food: Food; grams: string }
-type Nutrient = { unit: string; known_total: number | null; missing_count: number;
-  status: 'complete' | 'partial' | 'missing' }
-type Calculation = { totals: Record<string, Nutrient> }
 const PAGE_SIZE = 8
 const nutrientLabels = [ ['energy', '열량'], ['protein', '단백질'], ['fat', '지방'],
   ['carbohydrate', '탄수화물'], ['sugar', '당류'], ['fiber', '식이섬유'], ['sodium', '나트륨'] ]
@@ -32,6 +31,14 @@ function BowlArt() {
 }
 
 export default function App() {
+  const [view,setView] = useState('meal')
+  const [data,setData] = useState<WellnessData>(() => { try { const raw=localStorage.getItem(storageKey); if(raw){ const parsed=JSON.parse(raw); if(Array.isArray(parsed.records))return parsed } } catch {} return emptyData() })
+  const [persist,setPersist] = useState(() => {try{return !!localStorage.getItem(storageKey)}catch{return false}})
+  const [storageError,setStorageError] = useState('')
+  const [mealDate,setMealDate] = useState(today())
+  const [mealKind,setMealKind] = useState('아침')
+  const [saved,setSaved] = useState(false)
+  useEffect(()=>{try{if(persist)localStorage.setItem(storageKey,JSON.stringify(data));else localStorage.removeItem(storageKey);setStorageError('')}catch{setStorageError('브라우저 보관에 실패했습니다. 현재 실행 중인 기록만 유지됩니다.')}},[data,persist])
   const [health, setHealth] = useState<{ status: 'loading' | 'ok' | 'error'; count?: number }>({ status: 'loading' })
   const [connectionAttempt, setConnectionAttempt] = useState(0)
   const [query, setQuery] = useState('')
@@ -79,7 +86,7 @@ export default function App() {
 
   function changeEntries(next: Entry[]) {
     calculationController.current?.abort()
-    setEntries(next); setCalculation(null); setCalculationError(''); setCalculating(false)
+    setSaved(false); setEntries(next); setCalculation(null); setCalculationError(''); setCalculating(false)
   }
 
   function addFood(food: Food) {
@@ -121,9 +128,7 @@ export default function App() {
       <a className="brand" href="#main" aria-label="NourishOn 홈"><span className="brand-icon"><Sprout size={25} /></span>Nourish<span>On</span></a>
       <div className="sidebar-caption">MY WELLNESS SPACE</div>
       <nav aria-label="주 메뉴">
-        <a className="nav-item active" href="#main" aria-current="page"><Utensils size={19} /> 식사 분석 <ChevronRight size={16} /></a>
-        <button className="nav-item" disabled><UserRound size={19} /> 내 몸과 목표 <span className="soon">예정</span></button>
-        <button className="nav-item" disabled><Activity size={19} /> 생활 개선 <span className="soon">예정</span></button>
+        {([['meal','식사 분석'],['profile','내 몸과 목표'],['history','기록과 분석'],['insights','생활 개선']] as const).map(([key,label])=><button key={key} className={`nav-item ${view===key?'active':''}`} onClick={()=>setView(key)}>{key==='meal'?<Utensils size={19}/>:key==='profile'?<UserRound size={19}/>:<Activity size={19}/>} {label}</button>)}
       </nav>
       <div className="sidebar-bottom">
         <div className="small-leaf"><Leaf size={24} /></div>
@@ -134,8 +139,12 @@ export default function App() {
     </aside>
 
     <main id="main">
-      <header className="topbar"><div>나의 공간 <ChevronRight size={14} /> <strong>식사 분석</strong></div><span>{date}</span></header>
-      <section className="hero" aria-labelledby="page-title">
+      <header className="topbar"><div>나의 공간 <ChevronRight size={14} /> <strong>{{meal:"식사 분석",profile:"내 몸과 목표",history:"기록과 분석",insights:"생활 개선"}[view]}</strong></div><span>{date}</span></header>
+      <div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>기본은 실행 중에만 유지됩니다. 보관을 선택하면 암호화되지 않은 브라우저 저장소에 남으므로 공용 기기에서는 사용하지 마세요. 서버·GitHub에는 저장하지 않습니다.</p>{storageError&&<p role="alert">{storageError}</p>}</div>
+      {view==='profile'&&<Profile data={data} onChange={setData}/>}
+      {view==='history'&&<History data={data} onChange={setData}/>}
+      {view==='insights'&&<Insights data={data}/>}
+      {view==='meal'&&<><section className="hero" aria-labelledby="page-title">
         <div><div className="eyebrow"><Leaf size={15} /> EVERY MEAL, A LITTLE BETTER</div>
           <h1 id="page-title">오늘의 식사,<br className="mobile-break" /> 가볍게 돌아봐요.</h1>
           <p>먹은 음식과 양을 더하고, 한 끼에 담긴 영양을 살펴보세요.</p>
@@ -183,7 +192,7 @@ export default function App() {
           </li>)}</ul> : <div className="empty-meal"><span><Plus size={24} /></span><strong>아직 담은 음식이 없어요</strong><p>검색 결과에서 음식을 추가해주세요.</p></div>}
           {calculationError && <p className="inline-error" role="alert">{calculationError}</p>}
           <button className="calculate-button" disabled={!entries.length || calculating} onClick={() => void calculate()}>{calculating ? <><LoaderCircle size={18} className="spin" /> 계산 중</> : <>영양 합계 계산 <ArrowRight size={18} /></>}</button>
-          <div className="privacy-note"><ShieldCheck size={14} /> 입력 내용은 저장되지 않아요.</div>
+          <div className="privacy-note"><ShieldCheck size={14} /> ‘식사 기록에 추가’를 눌러야 기록됩니다.</div>
         </section>
       </div>
 
@@ -201,7 +210,9 @@ export default function App() {
         })}</div>
       </section>
 
-      <footer className="page-footer"><span><Leaf size={15} /> NourishOn · 나를 위한 식생활의 시작</span><span>개인 목표와 체성분 분석은 다음 단계에 추가할 예정이에요.</span></footer>
+      {calculation&&<section className="panel wellness-panel"><h2>이 한 끼를 기록하기</h2><label>식사 날짜<input type="date" max={today()} value={mealDate} onChange={e=>{setMealDate(e.target.value);setSaved(false)}}/></label><label>식사 구분<select value={mealKind} onChange={e=>{setMealKind(e.target.value);setSaved(false)}}>{['아침','점심','저녁','간식'].map(x=><option key={x}>{x}</option>)}</select></label><button className="calculate-button" disabled={saved||!mealDate||mealDate>today()} onClick={()=>{setData({...data,records:[...data.records,{id:crypto.randomUUID(),date:mealDate,kind:mealKind,calculation}]});setSaved(true)}}>{saved?'기록에 추가했어요':'식사 기록에 추가'}</button><p>계산 당시 음식·섭취량·출처 정보와 영양 합계를 보관합니다.</p></section>}
+      </>}
+      <footer className="page-footer"><span><Leaf size={15} /> NourishOn · 나를 위한 식생활의 시작</span><span>일반 성인 로컬 MVP · 진단이나 치료 목적이 아닙니다.</span></footer>
     </main>
   </div>
 }

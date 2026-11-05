@@ -26,6 +26,16 @@ class ApiTests(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None, None, None)
 
+    def test_profile_endpoint_and_private_validation(self):
+        payload = dict(age=30, height_cm=170, weight_kg=70, equation_sex='female',
+                       activity='inactive', scope_confirmed=True)
+        response = self.client.post('/profile/estimate', json=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['maintenance_kcal'], 2167)
+        response = self.client.post('/profile/estimate', json=payload | {'private_note':'practice-private-marker'})
+        self.assertEqual(response.status_code, 422)
+        self.assertNotIn('practice-private-marker', response.text)
+
     def test_health_and_docs(self):
         self.assertEqual(self.client.get("/health").json()["food_count"], 3)
         self.assertEqual(self.client.get("/docs").status_code, 200)

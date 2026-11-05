@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from backend.food_search import _normalize_name
 from backend.meal import calculate_meal
+from backend.profile import ProfileInput, estimate_profile
 
 
 DEFAULT_DATA = (Path(__file__).resolve().parents[1] / "data/processed"
@@ -137,6 +138,13 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None) -
             raise HTTPException(404, "해당 식품코드가 없습니다.") from None
         except (ValueError, TypeError, OverflowError):
             raise HTTPException(422, "계산할 수 없는 입력입니다.") from None
+
+    @app.post("/profile/estimate", summary="일반 성인 프로필의 BMI·추정 유지 에너지·참고 기준")
+    def profile(payload: ProfileInput):
+        try:
+            return estimate_profile(payload)
+        except ValueError:
+            raise HTTPException(422, "프로필 값과 적용 범위를 확인하세요.") from None
 
     return app
 

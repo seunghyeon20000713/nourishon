@@ -96,3 +96,54 @@ test('검색 페이지 이동과 빈 섭취량 안내', async ({ page }) => {
   await page.getByRole('button', { name: '이전 페이지' }).click()
   await expect(page.getByRole('button', { name: '연습용 음식 1 추가', exact: true })).toBeVisible()
 })
+
+test('profile and meal records connect to analysis with optional browser storage', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '내 몸과 목표', exact: true }).click()
+  await page.getByLabel('나이 (세)', { exact: true }).fill('30')
+  await page.getByLabel('키 (cm)', { exact: true }).fill('170')
+  await page.getByLabel('체중 (kg)', { exact: true }).fill('70')
+  await page.getByLabel('임신·수유 중이').check()
+  await page.getByRole('button', { name: '프로필 적용 및 참고 목표 계산' }).click()
+  await expect(page.getByText('2167 kcal/일')).toBeVisible()
+  await page.getByRole('button', {name:'식사 분석',exact:true}).click()
+  await page.getByRole('textbox',{name:'음식 이름'}).fill('국밥_돼지머리')
+  await page.getByRole('button',{name:'검색',exact:true}).click()
+  await page.getByRole('button',{name:/국밥_돼지머리 추가/}).first().click()
+  await page.getByRole('button',{name:'영양 합계 계산'}).click()
+  await page.getByRole('button',{name:'식사 기록에 추가',exact:true}).click()
+  await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
+  await expect(page.getByRole('heading',{name:/아침/})).toBeVisible()
+  await page.getByLabel('이 브라우저에 프로필·식사 기록 보관').check()
+  await page.reload()
+  await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
+  await expect(page.getByRole('heading',{name:/아침/})).toBeVisible()
+  await page.getByLabel('이 브라우저에 프로필·식사 기록 보관').uncheck()
+  await page.reload()
+  await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
+  await expect(page.getByText('이 날짜에 등록된 식사가 없습니다.')).toBeVisible()
+})
+
+test('mobile navigation and missing daily totals remain distinct from zero', async ({page}) => {
+  await page.setViewportSize({width:390,height:844})
+  await page.goto('/')
+  await page.evaluate(() => {
+    const date = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
+    const n=(known_total:number|null,unit:string,missing_count:number)=>({known_total,unit,missing_count,status:known_total===null?'missing':missing_count?'partial':'complete'})
+    localStorage.setItem('nourishon-local-mvp-v1',JSON.stringify({profile:null,estimate:null,records:[
+      {id:'practice-1',date,kind:'아침',calculation:{foods:[{food_name:'연습용 식사',intake_g:100}],totals:{energy:n(100,'kcal',0),fiber:n(null,'g',1),sugar:n(0,'g',0)}}},
+      {id:'practice-2',date,kind:'점심',calculation:{foods:[],totals:{energy:n(200,'kcal',1),fiber:n(null,'g',1),sugar:n(0,'g',0)}}}
+    ]}))
+  })
+  await page.reload()
+  await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
+  await expect(page.getByText('300 kcal',{exact:true})).toBeVisible()
+  await expect(page.getByText('0 g',{exact:true})).toBeVisible()
+  await expect(page.getByText('누락 2개 · 확인된 값만 합산',{exact:true})).toBeVisible()
+  for(const name of ['내 몸과 목표','생활 개선','기록과 분석']) {
+    await page.getByRole('button',{name,exact:true}).click()
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
+  }
+  await page.getByRole('button',{name:'생활 개선',exact:true}).click()
+  await expect(page.getByText('식이섬유 정보가 누락되어 적정 여부를 판단할 수 없습니다.')).toBeVisible()
+})
