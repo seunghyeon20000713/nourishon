@@ -1406,3 +1406,10 @@ main {
   .menu-expanded .journal-rail .nav-item { flex: none; flex-direction: row; height: 48px; }
 }
 .menu-expanded .journal-rail.sidebar { z-index: 60; }
+
+.meal-record-editor { margin: 16px 0; padding: 18px; background: #f6f9f3; border: 1px solid #dce6dc; border-radius: 8px; }
+.meal-record-editor fieldset { margin: 0 0 12px; padding: 0; border: 0; min-width: 0; }
+.meal-record-editor legend { font-weight: 650; }
+.meal-edit-fields { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.meal-record-editor p { font-size: 12px; color: #596e5c; }
+.record>button+button { margin-left: 8px; }
