@@ -1361,3 +1361,19 @@ main {
 .rail-logo img {
   flex-shrink:0
 }
+
+/* 선택 프로필의 실제 데이터로 계산하는 첫 이용 안내 */
+.getting-started { margin: 0 0 28px; border: 1px solid #dce6dc; background: #f6f9f3; border-radius: 10px; padding: 18px 22px; }
+.getting-started summary { cursor: pointer; font-weight: 650; color: #234d37; }
+.getting-started summary small { margin-left: 18px; font-weight: 400; color: #596e5c; }
+.getting-started-context { font-size: 12px; line-height: 1.8; color: #5b6a5c; margin: 16px 0; }
+.getting-started ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; list-style: none; padding: 0; margin: 0; }
+.getting-started li { padding: 18px; background: #fff; border: 1px solid #e0e8dd; border-radius: 7px; }
+.getting-started li[aria-current=step] { border-color: #508161; }
+.getting-started-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; font-size: 11px; border-radius: 50%; background: #eef2e9; color: #42604b; }
+.getting-started-number.done { background: #dcebd7; }
+.getting-started h2 { font-size: 14px; margin: 12px 0 8px; }
+.getting-started li p { min-height: 60px; font-size: 12px; line-height: 1.8; color: #5b6a5c; }
+.getting-started button { display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; padding: 6px 0; color: #19573f; font-weight: 600; font-size: 12px; }
+.getting-started li>small { display: block; margin-top: 8px; font-size: 10px; color: #596e5c; }
+@media(max-width:700px) { .getting-started { padding: 16px; } .getting-started ol { grid-template-columns: 1fr; } .getting-started li p { min-height: 0; } }
