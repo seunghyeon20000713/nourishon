@@ -150,6 +150,25 @@ class AccountTests(unittest.TestCase):
         with connect(TEST_DSN) as conn:
             self.assertFalse(conn.execute('SELECT rolsuper FROM pg_roles WHERE rolname=current_user').fetchone()['rolsuper'])
 
+    def test_activity_snapshot_and_legacy_save(self):
+        user, _ = self.register()
+        pid = self.profile_id()
+        activity = dict(id=str(uuid4()), date=date.today().isoformat(), age=30,
+                        activity_code='17152', weight_kg=70, minutes=30,
+                        calculation={'gross_kcal':999999})
+        data = self.data() | {'activityRecords':[activity]}
+        response = self.client.put(f'/account/profiles/{pid}/data', json={'revision':0,'data':data}, headers=self.headers(user))
+        self.assertEqual(response.status_code, 200)
+        saved = response.json()
+        self.assertEqual(saved['data']['activityRecords'][0]['calculation']['gross_kcal'], 98)
+        # 운동 필드를 모르는 이전 클라이언트 저장이 기존 운동 기록을 지우지 않는다.
+        legacy = saved['data'].copy()
+        legacy.pop('activityRecords')
+        response = self.client.put(f'/account/profiles/{pid}/data', json={'revision':saved['revision'],'data':legacy}, headers=self.headers(user))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['data']['activityRecords'], saved['data']['activityRecords'])
+        self.assertEqual(self.client.get('/account/profiles').json()['profiles'][0]['data']['activityRecords'], saved['data']['activityRecords'])
+
     def test_request_body_limit(self):
         r=self.client.post('/auth/register',content=b'x'*2_000_001,headers=HEADERS|{'Content-Type':'application/json'})
         self.assertEqual(r.status_code,413)

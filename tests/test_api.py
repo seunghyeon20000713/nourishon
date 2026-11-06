@@ -26,6 +26,18 @@ class ApiTests(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None, None, None)
 
+    def test_activity_api_and_cache(self):
+        from uuid import uuid4
+        self.assertEqual(len(self.client.get('/activities').json()['items']), 5)
+        value = dict(id=str(uuid4()), date='2020-01-01', age=30, activity_code='17152', weight_kg=70, minutes=30)
+        response = self.client.post('/activities/calculate', json=value)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['cache-control'], 'no-store')
+        self.assertEqual(response.json()['calculation']['gross_kcal'], 98)
+        invalid = self.client.post('/activities/calculate', json=value | {'activity_code':'private-activity-marker'})
+        self.assertEqual(invalid.status_code, 422)
+        self.assertNotIn('private-activity-marker', invalid.text)
+
     def test_measurement_validation(self):
         from uuid import uuid4
         from datetime import date, timedelta

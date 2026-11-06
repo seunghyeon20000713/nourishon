@@ -7,6 +7,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Query
 import psycopg
+from backend.activity_log import ACTIVITIES, ActivityRecord, calculate_activity
 from backend.accounts import router as account_router, Measurement
 from backend.database import database_url as read_database_url
 from fastapi.exceptions import RequestValidationError
@@ -121,7 +122,7 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
 
     @app.middleware("http")
     async def private_response(request, call_next):
-        private = request.url.path.startswith(("/auth/", "/account/", "/nutrition/", "/measurements/"))
+        private = request.url.path.startswith(("/auth/", "/account/", "/nutrition/", "/measurements/", "/activities/"))
         if private and request.method in {"POST", "PUT", "PATCH"}:
             chunks, size = [], 0
             async for chunk in request.stream():
@@ -166,6 +167,14 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
             raise HTTPException(404, "해당 식품코드가 없습니다.") from None
         except (ValueError, TypeError, OverflowError):
             raise HTTPException(422, "계산할 수 없는 입력입니다.") from None
+
+    @app.get("/activities", summary="표준 MET 운동 목록")
+    def activities():
+        return {'items': [{'code': code, **item} for code, item in ACTIVITIES.items()]}
+
+    @app.post("/activities/calculate", summary="실제 운동의 MET 소모량 참고 계산")
+    def activity_calculation(payload: ActivityRecord):
+        return calculate_activity(payload)
 
     @app.post("/measurements/validate", summary="신체 측정 기록 입력 확인")
     def validate_measurement(payload: Measurement):

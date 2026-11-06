@@ -1442,3 +1442,7 @@ main {
 .evidence-sources p,.evidence-sources small { font-size: 12px; line-height: 1.8; }
 .evidence-sources li { margin: 16px 0; }
 .exercise-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.activity-log { margin-top: 32px; padding-top: 12px; border-top: 1px solid #dce6dc; }
+.activity-log select { width: 100%; white-space: normal; }
+.activity-estimate,.activity-record { padding: 18px; margin: 18px 0; background: #f6f9f3; border: 1px solid #dce6dc; border-radius: 8px; overflow-wrap: anywhere; }
+.activity-log button:not(.calculate-button) { padding: 9px 14px; background: white; border: 1px solid #b9cdbb; border-radius: 6px; color: #19573f; }

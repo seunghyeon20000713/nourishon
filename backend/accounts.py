@@ -13,6 +13,7 @@ from psycopg.errors import UniqueViolation
 from psycopg.types.json import Jsonb
 
 from backend.database import connect
+from backend.activity_log import ActivityRecord, calculate_activity
 from backend.exercise import ExerciseInput, plan_exercise
 from backend.profile import ProfileInput, BodyComposition, estimate_profile
 
@@ -95,12 +96,13 @@ class WellnessInput(BaseModel):
     estimate: dict | None = None
     records: Annotated[list[StoredMeal], Field(max_length=2000)] = Field(default_factory=list)
     measurements: Annotated[list[Measurement], Field(max_length=1000)] = Field(default_factory=list)
+    activityRecords: Annotated[list[ActivityRecord], Field(max_length=2000)] | None = None
     exerciseInput: ExerciseInput | None = None
     exercisePlan: dict | None = None
 
     @model_validator(mode='after')
     def unique_ids(self):
-        for entries in (self.records, self.measurements):
+        for entries in (self.records, self.measurements, self.activityRecords or []):
             if len({x.id for x in entries}) != len(entries):
                 raise ValueError('중복 식별자')
         if self.exerciseInput and not self.profile:
@@ -230,7 +232,7 @@ def serialize(conn, profile):
                for row in conn.execute('SELECT * FROM meals WHERE profile_id=%s ORDER BY position', (profile['id'],))]
     return {'id': str(profile['id']), 'nickname': profile['nickname'], 'revision': profile['revision'],
             'data': {'profile': profile['settings'], 'estimate': profile['estimate'], 'records': records,
-                     'measurements': measurements, 'exerciseInput': profile['exercise_input'], 'exercisePlan': profile['exercise_plan']}}
+                     'activityRecords': profile['activity_records'], 'measurements': measurements, 'exerciseInput': profile['exercise_input'], 'exercisePlan': profile['exercise_plan']}}
 
 
 def owned(conn, user_id, profile_id, lock=False):
@@ -280,6 +282,19 @@ def save(profile_id: UUID, payload: SaveData, request: Request):
                 except (LookupError, ValueError, TypeError, OverflowError):
                     raise HTTPException(422, '식사 식품코드·섭취량을 확인하세요.') from None
             meals.append((record, calculation))
+        # 미변경 기록은 당시 MET·체중·시간·계산 결과를 보존한다.
+        activities = old['activity_records']
+        if data.activityRecords is not None:
+            prior_activities = {item['id']: item for item in activities}
+            activities = []
+            for item in data.activityRecords:
+                prior = prior_activities.get(str(item.id))
+                original = item.model_dump(mode='json')
+                if prior and all(prior.get(key) == value for key, value in original.items()):
+                    activities.append(prior)
+                else:
+                    activities.append(calculate_activity(item))
+        conn.execute('UPDATE profiles SET activity_records=%s WHERE id=%s', (Jsonb(activities), profile_id))
         conn.execute('UPDATE profiles SET settings=%s,estimate=%s,exercise_input=%s,exercise_plan=%s,revision=revision+1,updated_at=now() WHERE id=%s',
                      (Jsonb(data.profile.model_dump(mode='json')) if data.profile else None, Jsonb(estimate) if estimate else None,
                       Jsonb(data.exerciseInput.model_dump()) if data.exerciseInput else None, Jsonb(plan) if plan else None, profile_id))

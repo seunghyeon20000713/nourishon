@@ -1,3 +1,4 @@
+import type { ActivityRecord } from './ActivityLog'
 import { EvidenceSources } from './EvidenceSources'
 import type { EvidenceSource } from './EvidenceSources'
 import { PeriodAnalysis } from './PeriodAnalysis'
@@ -12,7 +13,7 @@ export type Nutrient = { unit: string; known_total: number | null; missing_count
 export type Calculation = { foods?: {food_code?:string; food_name:string; intake_g:number}[]; totals: Record<string,Nutrient> }
 export type MealRecord = { id:string; date:string; kind:string; calculation:Calculation }
 type Estimate = { bmi:number; maintenance_kcal:number; protein_reference_g:number; limitations:string[]; sources:EvidenceSource[]; macro_reference_ranges?: Record<string,{min_g:number;max_g:number;percent:number[]}> }
-export type WellnessData = { profile: Record<string,unknown>|null; estimate:Estimate|null; records:MealRecord[]; measurements?:Measurement[]; exerciseInput?:ExerciseInput|null; exercisePlan?:ExercisePlan|null }
+export type WellnessData = { profile: Record<string,unknown>|null; estimate:Estimate|null; records:MealRecord[]; measurements?:Measurement[]; activityRecords?:ActivityRecord[]; exerciseInput?:ExerciseInput|null; exercisePlan?:ExercisePlan|null }
 export const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
 export const emptyData = ():WellnessData => ({profile:null,estimate:null,records:[]})
 export const storageKey = 'nourishon-local-mvp-v1'
