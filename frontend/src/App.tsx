@@ -4,13 +4,13 @@ import { useServerProfiles } from './serverProfiles'
 import { Exercise } from './Exercise'
 import { Profile, History, Insights, today } from './Wellness'
 import { useLocalProfiles } from './localProfiles'
-import { Dashboard } from './Dashboard'
+const Dashboard = lazy(()=>import('./Dashboard').then(m=>({default:m.Dashboard})))
 import type { Calculation } from './Wellness'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import type { FormEvent } from 'react'
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight,
   CircleAlert, CircleHelp, Flame, Leaf, LoaderCircle, Plus, Salad, Search,
-  ShieldCheck, Sprout, Trash2, UserRound, Utensils } from 'lucide-react'
+  ShieldCheck, Trash2, UserRound, Utensils, ChartColumn, CalendarDays, TrendingUp, Settings, ChevronDown } from 'lucide-react'
 
 type Food = { food_code: string; food_name: string; basis: string;
   source_name: string | null; updated_date: string | null }
@@ -21,26 +21,19 @@ const nutrientLabels = [ ['energy', '열량'], ['protein', '단백질'], ['fat',
   ['carbohydrate', '탄수화물'], ['sugar', '당류'], ['fiber', '식이섬유'], ['sodium', '나트륨'] ]
 const format = (n: number) => new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 3 }).format(n)
 
-function BowlArt() {
-  return <svg className="bowl-art" viewBox="0 0 220 150" fill="none" aria-hidden="true">
-    <ellipse cx="110" cy="127" rx="69" ry="8" fill="#D5DECE" />
-    <path d="M41 68h138c-5 39-31 61-69 61S46 107 41 68Z" fill="#F9F6EA" stroke="#387452" strokeWidth="2" />
-    <path d="M44 83h132" stroke="#CDD9BC" strokeWidth="7" />
-    <ellipse cx="110" cy="68" rx="70" ry="24" fill="#AEC98A" stroke="#387452" strokeWidth="2" />
-    <path d="M71 61C42 28 72 9 97 44c12-46 46-32 30 3 42-21 58 7 25 23" fill="#559264" />
-    <path d="M85 70c-25-21-10-37 10-13 1-27 30-32 30 0 27-18 40-2 18 19" fill="#B8D797" />
-    <path d="m81 27 17 36m43-38-18 40" stroke="#E5ECD5" strokeWidth="2" strokeLinecap="round" />
-    <ellipse cx="71" cy="75" rx="13" ry="9" fill="#D88D61" />
-    <ellipse cx="145" cy="61" rx="12" ry="10" fill="#E7BA65" />
-    <path d="m163 26 18-16m-8 31 21-4" stroke="#7DA17A" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-}
-
 export default function App() {
+  useEffect(()=>{
+    const panels=()=>document.querySelectorAll<HTMLDetailsElement>('.profile-tools[open],#account-tools[open]')
+    const closeOutside=(event:PointerEvent)=>panels().forEach(panel=>{if(!panel.contains(event.target as Node))panel.open=false})
+    const escape=(event:KeyboardEvent)=>{if(event.key==='Escape')panels().forEach(panel=>{panel.open=false;panel.querySelector('summary')?.focus()})}
+    document.addEventListener('pointerdown',closeOutside);document.addEventListener('keydown',escape)
+    return()=>{document.removeEventListener('pointerdown',closeOutside);document.removeEventListener('keydown',escape)}
+  },[])
   return <Account>{(session,onPending)=><Workspace key={session.user?.id??'local'} session={session} onPending={onPending}/>}</Account>
 }
 function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>void}) {
-  const [view,setView] = useState('meal')
+  const [view,setView] = useState('dashboard')
+  const [historyDay,setHistoryDay] = useState(today())
   const localProfiles = useLocalProfiles()
   const serverProfiles = useServerProfiles(session)
   useEffect(()=>{onPending(serverProfiles.saving)},[serverProfiles.saving,onPending])
@@ -140,39 +133,36 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
   const date = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', weekday: 'long', timeZone: 'Asia/Seoul' }).format(new Date())
 
   return <div className="app-shell">
-    <aside className="sidebar">
-      <a className="brand" href="#main" aria-label="NourishOn 홈"><span className="brand-icon"><Sprout size={25} /></span>Nourish<span>On</span></a>
-      <div className="sidebar-caption">MY WELLNESS SPACE</div>
+    <aside className="sidebar journal-rail">
+      <button className="rail-logo" aria-label="NourishOn 홈" onClick={()=>setView('dashboard')}><img src="/brand/nourishon-mark.png" alt=""/></button>
       <nav aria-label="주 메뉴">
-        {([['meal','식사 분석'],['profile','내 몸과 목표'],['history','기록과 분석'],['insights','생활 개선'],['exercise','운동 계획']] as const).map(([key,label])=><button key={key} className={`nav-item ${view===key?'active':''}`} onClick={()=>setView(key)}>{key==='meal'?<Utensils size={19}/>:key==='profile'?<UserRound size={19}/>:<Activity size={19}/>} {label}</button>)}
+        {([['dashboard','영양 대시보드',ChartColumn],['meal','식사 분석',Utensils],['history','기록과 분석',CalendarDays],['insights','생활 개선',TrendingUp],['exercise','운동 계획',Activity],['profile','내 몸과 목표',UserRound]] as const).map(([key,label,Icon])=><button key={key} className={`nav-item ${view===key?'active':''}`} aria-label={label} title={label} aria-current={view===key?'page':undefined} onClick={()=>setView(key)}><Icon size={23}/><span>{label}</span></button>)}
       </nav>
-      <div className="sidebar-bottom">
-        <div className="small-leaf"><Leaf size={24} /></div>
-        <strong>작은 한 끼가 만드는 변화</strong>
-        <p>나에게 맞는 식생활을<br />하나씩 찾아가요.</p>
-        <div className="local-note"><span /> 로컬 개발 버전</div>
-      </div>
+      <button className="rail-settings" aria-label="계정 설정" title="계정 설정" onClick={()=>{const el=document.getElementById('account-tools') as HTMLDetailsElement|null;if(el){el.open=!el.open;el.querySelector('summary')?.focus()}}}><Settings size={22}/></button>
     </aside>
-
     <main id="main">
-      <header className="topbar"><div>나의 공간 <ChevronRight size={14} /> <strong>{{meal:"식사 분석",profile:"내 몸과 목표",history:"기록과 분석",insights:"생활 개선",exercise:"운동 계획"}[view]}</strong></div><span>{date}</span></header>
-      <section className="profile-switcher" aria-label="로컬 사용자 프로필 관리"><label>사용 중인 프로필<select aria-label="사용 중인 프로필" value={activeId} onChange={e=>select(e.target.value)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.nickname}</option>)}</select></label><form onSubmit={e=>{e.preventDefault();register(nickname);setNickname('')}}><label className="sr-only" htmlFor="nickname">새 프로필 별칭</label><input id="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="새 프로필 별칭" maxLength={20} required/><button type="submit">프로필 등록</button></form><small>{session.user?'이 계정에 속한 프로필·측정·식사 기록을 구분합니다.':'로컬 테스트용 프로필 구분 · 로그인이나 접근 제한 기능이 아닙니다.'}</small></section>
-      {!session.user&&<div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>기본은 실행 중에만 유지됩니다. 보관을 선택하면 등록한 모든 로컬 프로필과 기록이 암호화되지 않은 브라우저 저장소에 남으므로 공용 기기에서는 사용하지 마세요. 서버·GitHub에는 저장하지 않습니다.</p>{storageError&&<p role="alert">{storageError}</p>}</div>}
-      {session.user&&<div className="storage-panel" role="status">{serverProfiles.saving?"DB 저장 중…":serverProfiles.loading?"DB 기록 불러오는 중…":storageError?storageError:"계정별 PostgreSQL 기록 · 저장 완료"}{storageError&&<button disabled={serverProfiles.saving>0} onClick={()=>{if(window.confirm("현재 화면의 임시 변경을 버리고 DB 기록을 다시 불러올까요?"))void serverProfiles.reload()}}>DB 기록 다시 불러오기</button>}</div>}
+      <header className="journal-topbar"><button className="journal-wordmark" onClick={()=>setView('dashboard')}>NourishOn</button><div className="journal-product">영양 분석 저널 <span>Nutrition Analysis Journal</span></div><button className="record-primary" onClick={()=>setView('meal')}><Plus size={18}/> 식사 기록</button>
+      <details className="profile-tools"><summary><UserRound size={18}/><span>내 프로필</span><ChevronDown size={14}/></summary><div className="profile-popup">
+       <section className="profile-switcher" aria-label="사용자 프로필 관리"><label>사용 중인 프로필<select aria-label="사용 중인 프로필" value={activeId} onChange={e=>select(e.target.value)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.nickname}</option>)}</select></label><form onSubmit={async e=>{e.preventDefault();await register(nickname);setNickname('')}}><label className="sr-only" htmlFor="nickname">새 프로필 별칭</label><input id="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="새 프로필 별칭" maxLength={20} required/><button type="submit">프로필 등록</button></form><small>{session.user?'이 계정에 속한 프로필·측정·식사 기록을 구분합니다.':'로컬 프로필은 로그인이나 접근 제한 기능이 아닙니다.'}</small></section>
+       {!session.user&&<div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>선택한 모든 로컬 기록이 암호화되지 않은 브라우저 저장소에 남습니다. 공용 기기에서는 사용하지 마세요. 서버에 자동 업로드하지 않습니다.</p></div>}
+      </div></details></header>
+      <div className="page-content">
+      {!session.user&&storageError&&<div className="save-error" role="alert">{storageError}</div>}
+      {session.user&&<div className={`save-indicator ${storageError?'save-error':''}`} role="status">{serverProfiles.saving?"DB 저장 중…":serverProfiles.loading?"DB 기록 불러오는 중…":storageError?storageError:"계정별 PostgreSQL 기록 · 저장 완료"}{storageError&&<button disabled={serverProfiles.saving>0} onClick={()=>{if(window.confirm("현재 화면의 임시 변경을 버리고 DB 기록을 다시 불러올까요?"))void serverProfiles.reload()}}>DB 기록 다시 불러오기</button>}</div>}
+      {view==='dashboard'&&<Suspense fallback={<p role="status">영양 대시보드 불러오는 중…</p>}><Dashboard data={data} onView={(v,day)=>{if(day)setHistoryDay(day);setView(v)}} onMeal={kind=>{setMealKind(kind);setMealDate(today());setSaved(false);setView('meal')}}/></Suspense>}
       {view==='exercise'&&<Exercise key={activeId} data={data} onChange={setData} session={session} profileId={activeId}/>}
       {view==='profile'&&<Profile key={activeId} data={data} onChange={setData}/>}
-      {view==='history'&&<History key={activeId} data={data} onChange={setData}/>}
+      {view==='history'&&<History key={`${activeId}-${historyDay}`} initialDay={historyDay} data={data} onChange={setData}/>}
       {view==='insights'&&<Insights data={data}/>}
-      {view==='meal'&&<><Dashboard data={data} onView={setView} onMeal={kind=>{setMealKind(kind);setMealDate(today());setSaved(false)}}/><section className="hero" aria-labelledby="page-title">
-        <div><div className="eyebrow"><Leaf size={15} /> EVERY MEAL, A LITTLE BETTER</div>
-          <h1 id="page-title">오늘의 식사,<br className="mobile-break" /> 가볍게 돌아봐요.</h1>
+      {view==='meal'&&<><section className="hero" aria-labelledby="page-title">
+        <div><div className="eyebrow">FOOD DIARY</div>
+          <h1 id="page-title">식사 기록과 영양 계산</h1>
           <p>먹은 음식과 양을 더하고, 한 끼에 담긴 영양을 살펴보세요.</p>
           <div className={`connection ${health.status}`} role="status">
             <span className="status-dot" />{health.status === 'ok' ? `${format(health.count!)}개 식품 정보와 연결됐어요` : health.status === 'loading' ? '식품 정보를 연결하고 있어요' : '식품 정보 연결을 확인해주세요'}
             {health.status === 'error' && <button onClick={() => setConnectionAttempt(n => n + 1)}>다시 연결</button>}
           </div>
         </div>
-        <div className="hero-art"><span>잘 먹는 일,<br /><b>나를 돌보는 시작.</b></span><BowlArt /><span className="art-dot one" /><span className="art-dot two" /></div>
       </section>
 
       <div className="steps" aria-label="분석 순서"><span><b>01</b> 음식 찾기</span><ChevronRight size={15} /><span><b>02</b> 섭취량 입력</span><ChevronRight size={15} /><span><b>03</b> 영양 확인</span></div>
@@ -184,7 +174,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
             <Search size={20} aria-hidden="true" /><input aria-label="음식 이름" placeholder="음식 이름을 검색해보세요" value={query} onChange={e => setQuery(e.target.value)} maxLength={100} />
             <button type="submit" disabled={searching}>{searching ? <LoaderCircle className="spin" size={18} /> : '검색'}</button>
           </form>
-          <div className="suggestions"><span>이런 음식은 어때요?</span>{['두부', '현미밥', '닭가슴살', '사과'].map(term => <button key={term} onClick={() => { setQuery(term); void search(term) }}>{term}<ArrowUpRight size={12} /></button>)}</div>
+          <div className="suggestions"><span>검색어 예시</span>{['두부', '현미밥', '닭가슴살', '사과'].map(term => <button key={term} onClick={() => { setQuery(term); void search(term) }}>{term}<ArrowUpRight size={12} /></button>)}</div>
           <div className="results-area" aria-live="polite" aria-busy={searching}>
             {searchError && <div className="error-box" role="alert"><CircleAlert size={18} /><span>{searchError}</span></div>}
             {searching ? <div className="empty-state"><LoaderCircle className="spin" size={30} /><h3>음식을 찾고 있어요</h3><p>잠시만 기다려주세요.</p></div>
@@ -231,6 +221,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
 
       {calculation&&<section className="panel wellness-panel"><h2>이 한 끼를 기록하기</h2><label>식사 날짜<input type="date" max={today()} value={mealDate} onChange={e=>{setMealDate(e.target.value);setSaved(false)}}/></label><label>식사 구분<select value={mealKind} onChange={e=>{setMealKind(e.target.value);setSaved(false)}}>{['아침','점심','저녁','간식'].map(x=><option key={x}>{x}</option>)}</select></label><button className="calculate-button" disabled={saved||!mealDate||mealDate>today()} onClick={()=>{setData({...data,records:[...data.records,{id:crypto.randomUUID(),date:mealDate,kind:mealKind,calculation}]});setSaved(true)}}>{saved?'기록에 추가했어요':'식사 기록에 추가'}</button><p>계산 당시 음식·섭취량·출처 정보와 영양 합계를 보관합니다.</p></section>}
       </>}
+      </div>
       <footer className="page-footer"><span><Leaf size={15} /> NourishOn · 나를 위한 식생활의 시작</span><span>일반 성인 로컬 MVP · 진단이나 치료 목적이 아닙니다.</span></footer>
     </main>
   </div>

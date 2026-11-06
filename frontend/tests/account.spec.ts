@@ -1,3 +1,4 @@
+import {openAccount} from './ui'
 import { test, expect } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
@@ -6,12 +7,12 @@ import path from 'node:path'
 test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리', async ({page}) => {
  const names:string[]=[]
  const password=randomBytes(24).toString('base64url')
- async function signup(){const name=`e2e_${randomBytes(8).toString('hex')}`;names.push(name)
+ async function signup(){await openAccount(page);const name=`e2e_${randomBytes(8).toString('hex')}`;names.push(name)
   await page.getByRole('button',{name:'회원가입으로 전환',exact:true}).click()
   await page.getByLabel('아이디',{exact:true}).fill(name)
   await page.getByLabel('비밀번호',{exact:true}).fill(password)
   await page.getByRole('button',{name:'가입하고 시작',exact:true}).click()
-  await expect(page.getByText(`${name}님의 계정`,{exact:true})).toBeVisible()
+  await expect(page.locator('#account-tools > summary')).toContainText(name)
   await expect(page.getByText('계정별 PostgreSQL 기록 · 저장 완료',{exact:true})).toBeVisible()
   return name
  }
@@ -48,6 +49,7 @@ test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리',
   await page.reload()
   await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
   await expect(page.getByRole('heading',{name:/아침/})).toBeVisible()
+  await openAccount(page)
   await page.getByRole('button',{name:'로그아웃',exact:true}).click()
   const b=await signup()
   expect(a).not.toBe(b)
@@ -55,11 +57,12 @@ test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리',
   await expect(page.getByText('이 날짜에 등록된 식사가 없습니다.')).toBeVisible()
   await page.getByRole('button',{name:'내 몸과 목표',exact:true}).click()
   await expect(page.getByLabel('체중 (kg)',{exact:true})).toBeEmpty()
+  await openAccount(page)
   await page.getByRole('button',{name:'로그아웃',exact:true}).click()
   await page.getByLabel('아이디',{exact:true}).fill(a)
   await page.getByLabel('비밀번호',{exact:true}).fill(password)
   await page.getByRole('button',{name:'로그인',exact:true}).click()
-  await expect(page.getByText(`${a}님의 계정`,{exact:true})).toBeVisible()
+  await expect(page.locator('#account-tools > summary')).toContainText(a)
   await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
   await expect(page.getByRole('heading',{name:/아침/})).toBeVisible()
   await page.getByRole('button',{name:'운동 계획',exact:true}).click()

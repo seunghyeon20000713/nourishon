@@ -61,8 +61,8 @@ export function Profile({data,onChange}:{data:WellnessData;onChange:(d:WellnessD
  <Measurements data={data}/>
  </section>
 }
-export function History({data,onChange}:{data:WellnessData;onChange:(d:WellnessData)=>void}) {
- const [day,setDay]=useState(today());const records=data.records.filter(r=>r.date===day)
+export function History({data,onChange,initialDay}:{data:WellnessData;onChange:(d:WellnessData)=>void;initialDay?:string}) {
+ const [day,setDay]=useState(initialDay??today());const records=data.records.filter(r=>r.date===day)
  return <section className="panel wellness-panel"><h1>식사 기록과 기간 분석</h1><label>조회 날짜<input type="date" value={day} onChange={e=>{if(e.target.value)setDay(e.target.value)}}/></label><p>등록한 식사만 집계합니다. 미기록은 섭취량 0 또는 결핍을 뜻하지 않습니다.</p>{records.length?<><Totals records={records}/>{records.map(r=><article className="record" key={r.id}><h3>{r.date} · {r.kind}</h3><p>{r.calculation.foods?.map(f=>`${f.food_name} ${f.intake_g}g`).join(', ')}</p><button onClick={()=>{if(window.confirm('이 식사 기록을 삭제할까요?'))onChange({...data,records:data.records.filter(x=>x.id!==r.id)})}}>기록 삭제</button></article>)}</>:<p>이 날짜에 등록된 식사가 없습니다.</p>}<h2>선택 날짜까지 최근 7일</h2><p>하루 전체 섭취를 확인한 결과가 아닌 기록 현황입니다.</p><div className="week-grid">{Array.from({length:7},(_,i)=>{const date=new Date(`${day}T12:00:00+09:00`);date.setUTCDate(date.getUTCDate()-6+i);const key=date.toISOString().slice(0,10);const rows=data.records.filter(r=>r.date===key);const energy=aggregate(rows).energy;return <button key={key} onClick={()=>setDay(key)}>{key.slice(5)}<br/>{rows.length?`${rows.length}끼 · ${energy.known_total===null?'열량 정보 없음':`${Math.round(energy.known_total)} kcal`}`:'미기록'}{rows.length>0&&energy.status!=='complete'?' (열량 누락 있음)':''}</button>})}</div></section>
 }
 export function Insights({data}:{data:WellnessData}) {
