@@ -1437,3 +1437,8 @@ main {
 .period-bar { height: 5px; background: #edf1e9; margin-top: 9px; border-radius: 4px; overflow: hidden; }
 .period-bar i { height: 5px; background: #558166; display: block; }
 @media(max-width:700px) { .period-summary { grid-template-columns: 1fr; } .period-days { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+.evidence-sources { margin: 20px 0; padding: 16px; background: #f6f9f3; border: 1px solid #dce6dc; border-radius: 8px; }
+.evidence-sources summary { color: #19573f; font-weight: 600; cursor: pointer; }
+.evidence-sources p,.evidence-sources small { font-size: 12px; line-height: 1.8; }
+.evidence-sources li { margin: 16px 0; }
+.exercise-fields { border: 0; padding: 0; margin: 0; min-width: 0; }

@@ -37,6 +37,14 @@ class ExerciseTests(unittest.TestCase):
         a=plan_exercise(self.profile(),self.request())
         b=plan_exercise(self.profile(body=body),self.request())
         self.assertEqual(a['schedule'],b['schedule'])
+    def test_reference_scope_and_service_time_rules(self):
+        result = plan_exercise(self.profile(), self.request())
+        self.assertIn('중강도 이상', result['reference'])
+        self.assertEqual(result['sources'][0]['checked_on'], '2026-11-06')
+        self.assertIn('분 단위', result['sources'][1]['usage'])
+        self.assertIn('충족한다는 뜻은 아닙니다', result['message'])
+        self.assertLess(result['weekly_aerobic_minutes'], 150)
+
     def test_invalid_input(self):
         for kw in [dict(days=1),dict(minutes=0),dict(current_weekly_minutes=-1),dict(has_limitations='no'),dict(scope_confirmed=False)]:
             with self.subTest(kw=kw),self.assertRaises(ValidationError):self.request(**kw)

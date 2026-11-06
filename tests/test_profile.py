@@ -45,6 +45,16 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(ranges['fat'], {'percent':[15,30], 'min_g':42.0, 'max_g':84.0})
         self.assertIn('2025', result['macro_reference_version'])
 
+    def test_source_version_scope_and_check_date(self):
+        result = estimate_profile(self.profile())
+        self.assertEqual(len(result['sources']), 5)
+        for source in result['sources']:
+            self.assertEqual(source['checked_on'], '2026-11-06')
+            self.assertTrue(source['version'])
+            self.assertTrue(source['applies_to'])
+            self.assertTrue(source['usage'])
+        self.assertIn('북미', result['sources'][1]['version'])
+
     def test_measurement_dates(self):
         for change in [dict(measured_on='2999-01-01'),
                        dict(measured_on='2020-01-01', body={'measured_on':'2020-01-02','fat_mass_kg':20})]:

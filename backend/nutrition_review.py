@@ -1,5 +1,6 @@
 """기록된 식사 스냅샷의 영양 구성 검토. 결핍 진단·점수화·자동 식단 처방 제외."""
 import math
+from backend.references import checked_sources
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 from backend.profile import ProfileInput, KDRI_SOURCE, DIET_SOURCE, estimate_profile
@@ -42,8 +43,8 @@ def review_nutrition(request: ReviewInput) -> dict:
             'recorded_meals':len(request.meals),'totals':totals,'macros':[],
             'macro_status':'no_records','macro_message':'식사를 기록하면 영양 구성을 확인할 수 있습니다.',
             'sodium_contributors':[], 'actions':[],
-            'sources':[{'title':'2025 한국인 기준 · 에너지 적정비율','url':KDRI_SOURCE},
-                       {'title':'WHO Healthy diet · 일반 성인 참고','url':DIET_SOURCE}],
+            'sources':checked_sources([{'title':'2025 한국인 기준 · 에너지 적정비율','url':KDRI_SOURCE},
+                       {'title':'WHO Healthy diet · 일반 성인 참고','url':DIET_SOURCE}]),
             'sugar_note':'총당류 기록을 WHO 유리당 기준과 직접 비교하거나 혈당을 예측하지 않습니다.',
             'rules_version':'recorded-nutrition-review-v1'}
     if not foods:return result

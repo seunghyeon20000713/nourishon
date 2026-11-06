@@ -4,8 +4,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
 from backend.profile import ProfileInput
 
-WHO = 'https://www.who.int/europe/news-room/fact-sheets/item/physical-activity'
-NIDDK = 'https://www.niddk.nih.gov/health-information/weight-management/tips-get-active/tips-keep-moving'
+from backend.references import ACTIVITY_SOURCE as WHO, NIDDK_SOURCE as NIDDK, checked_sources
 
 
 class ExerciseInput(BaseModel):
@@ -25,9 +24,9 @@ def plan_exercise(profile: ProfileInput, request: ExerciseInput) -> dict:
         'version': 'adult-activity-draft-v1',
         'generated_on': datetime.now(timezone(timedelta(hours=9))).date().isoformat(),
         'medical_prescription': False,
-        'sources': [{'title': 'WHO 2020 일반 성인 활동 지침', 'url': WHO},
-                    {'title': 'NIDDK 안전한 활동 시작', 'url': NIDDK}],
-        'reference': '일반 성인 참고는 중강도 유산소 주 150~300분과 주요 근육 강화 주 2일 이상입니다.',
+        'sources': checked_sources([{'title': 'WHO 2020 일반 성인 활동 지침', 'url': WHO},
+                    {'title': 'NIDDK 안전한 활동 시작', 'url': NIDDK}]),
+        'reference': '일반 성인 참고는 중강도 유산소 주 150~300분과 주요 근육을 사용하는 중강도 이상 근력 활동 주 2일 이상입니다.',
         'stop_rule': '흉통·어지럼·실신감·통증·비정상적인 호흡곤란이 있으면 중단하고 진료를 받으세요.',
     }
     if request.has_limitations or request.has_symptoms:

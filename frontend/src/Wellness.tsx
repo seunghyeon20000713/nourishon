@@ -1,3 +1,5 @@
+import { EvidenceSources } from './EvidenceSources'
+import type { EvidenceSource } from './EvidenceSources'
 import { PeriodAnalysis } from './PeriodAnalysis'
 import { MealRecordEditor } from './MealRecordEditor'
 import { NutritionReview } from './NutritionReview'
@@ -9,7 +11,7 @@ import type { FormEvent } from 'react'
 export type Nutrient = { unit: string; known_total: number | null; missing_count: number; status: 'complete'|'partial'|'missing' }
 export type Calculation = { foods?: {food_code?:string; food_name:string; intake_g:number}[]; totals: Record<string,Nutrient> }
 export type MealRecord = { id:string; date:string; kind:string; calculation:Calculation }
-type Estimate = { bmi:number; maintenance_kcal:number; protein_reference_g:number; limitations:string[]; sources:{title:string;url:string}[]; macro_reference_ranges?: Record<string,{min_g:number;max_g:number;percent:number[]}> }
+type Estimate = { bmi:number; maintenance_kcal:number; protein_reference_g:number; limitations:string[]; sources:EvidenceSource[]; macro_reference_ranges?: Record<string,{min_g:number;max_g:number;percent:number[]}> }
 export type WellnessData = { profile: Record<string,unknown>|null; estimate:Estimate|null; records:MealRecord[]; measurements?:Measurement[]; exerciseInput?:ExerciseInput|null; exercisePlan?:ExercisePlan|null }
 export const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
 export const emptyData = ():WellnessData => ({profile:null,estimate:null,records:[]})
@@ -59,7 +61,7 @@ export function Profile({data,onChange}:{data:WellnessData;onChange:(d:WellnessD
  <fieldset className="wide"><legend>체중·인바디 측정 · 체중과 같은 측정 기준으로 입력</legend><label>측정일<input name="measured_on" type="date" required max={today()} defaultValue={(p.measured_on as string)??body.measured_on??today()}/></label>{[['skeletal_muscle_kg','골격근량 (kg)'],['fat_mass_kg','체지방량 (kg)'],['body_fat_percent','체지방률 (%)']].map(([key,label])=><label key={key}>{label}<input name={key} type="number" min="0" max={key==='body_fat_percent'?100:350} step="any" defaultValue={body[key]}/></label>)}</fieldset>
  <label className="wide"><input type="checkbox" required/> 임신·수유 중이 아니며 질환 치료식·재활·전문 운동선수 관리가 아닌 일반 성인 참고용임을 확인했습니다.</label>
  <button className="calculate-button wide" disabled={busy}>{busy?'계산 중':'프로필 적용 및 참고 목표 계산'}</button></form>{error&&<p role="alert">{error}</p>}
- {data.estimate&&<div className="estimate"><h2>참고 목표</h2><p>BMI <b>{data.estimate.bmi}</b> · 추정 유지 에너지 <b>{data.estimate.maintenance_kcal} kcal/일</b> · 단백질 일반 참고 <b>{data.estimate.protein_reference_g} g/일</b></p><p>WHO 일반 성인 참고: 식이섬유 하루 25g 이상 · 나트륨 하루 2,000mg 미만.</p><ul>{data.estimate.limitations.map(t=><li key={t}>{t}</li>)}</ul><p>인바디 값은 현재 프로필에 보관됩니다. 측정 조건에 따라 달라지므로 정확도 향상을 보장하지 않습니다.</p>{data.estimate.macro_reference_ranges&&<div><h3>2025 한국인 기준 · 에너지 적정비율 참고</h3><p>현재 추정 유지 에너지를 비율로 환산한 참고 범위이며 개인 처방이 아닙니다. 단백질 체중당 참고값과는 기준이 다릅니다.</p>{Object.entries(data.estimate.macro_reference_ranges).map(([key,r])=><p key={key}>{labels[key]}: {r.percent[0]}~{r.percent[1]}% · {r.min_g}~{r.max_g} g/일</p>)}</div>}{data.estimate.sources.map(s=><p key={s.url}><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></p>)}</div>}
+ {data.estimate&&<div className="estimate"><h2>참고 목표</h2><p>BMI <b>{data.estimate.bmi}</b> · 추정 유지 에너지 <b>{data.estimate.maintenance_kcal} kcal/일</b> · 단백질 일반 참고 <b>{data.estimate.protein_reference_g} g/일</b></p><p>WHO 일반 성인 참고: 식이섬유 하루 25g 이상 · 나트륨 하루 2,000mg 미만.</p><ul>{data.estimate.limitations.map(t=><li key={t}>{t}</li>)}</ul><p>인바디 값은 현재 프로필에 보관됩니다. 측정 조건에 따라 달라지므로 정확도 향상을 보장하지 않습니다.</p>{data.estimate.macro_reference_ranges&&<div><h3>2025 한국인 기준 · 에너지 적정비율 참고</h3><p>현재 추정 유지 에너지를 비율로 환산한 참고 범위이며 개인 처방이 아닙니다. 단백질 체중당 참고값과는 기준이 다릅니다.</p>{Object.entries(data.estimate.macro_reference_ranges).map(([key,r])=><p key={key}>{labels[key]}: {r.percent[0]}~{r.percent[1]}% · {r.min_g}~{r.max_g} g/일</p>)}</div>}<EvidenceSources sources={data.estimate.sources}/></div>}
  <Measurements data={data} onChange={onChange}/>
  </section>
 }

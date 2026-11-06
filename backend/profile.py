@@ -6,11 +6,8 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Number = Annotated[float, Field(strict=True, allow_inf_nan=False)]
-ENERGY_SOURCE = "https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/equations-estimate-energy-requirement.html"
-PROTEIN_SOURCE = "https://www.healthlinkbc.ca/healthlinkbc-files/protein-and-your-health"
-DIET_SOURCE = "https://www.who.int/news-room/fact-sheets/detail/healthy-diet"
-KDRI_SOURCE = "https://www.kns.or.kr/fileroom/fileroom_view.asp?BoardID=Kdr&idx=168"
-ACTIVITY_SOURCE = "https://www.who.int/europe/news-room/fact-sheets/item/physical-activity"
+from backend.references import (ENERGY_SOURCE, PROTEIN_SOURCE, DIET_SOURCE,
+                                KDRI_SOURCE, ACTIVITY_SOURCE, checked_sources)
 COEFFICIENTS = {
     "male": {"inactive": (753.07, -10.83, 6.50, 14.10),
              "low_active": (581.47, -10.83, 8.30, 14.94),
@@ -93,9 +90,9 @@ def estimate_profile(profile: ProfileInput) -> dict:
                        "BMI는 체지방·근육·건강 상태의 단독 판정 기준이 아닙니다.",
                        "인바디는 변화 기록에 활용하며 이번 에너지 공식에는 사용하지 않습니다.",
                        "단백질은 일반 성인 참고값이며 운동선수·질환 치료 목표가 아닙니다."],
-        "sources": [{"title": "2025 한국인 기준: 에너지 적정비율", "url": KDRI_SOURCE},
+        "sources": checked_sources([{"title": "2025 한국인 기준: 에너지 적정비율", "url": KDRI_SOURCE},
                     {"title": "유지 에너지: DRI 2023", "url": ENERGY_SOURCE},
                     {"title": "일반 성인 단백질 참고", "url": PROTEIN_SOURCE},
                     {"title": "WHO 식생활 기준", "url": DIET_SOURCE},
-                    {"title": "WHO 2020 신체활동 지침", "url": ACTIVITY_SOURCE}],
+                    {"title": "WHO 2020 신체활동 지침", "url": ACTIVITY_SOURCE}]),
     }
