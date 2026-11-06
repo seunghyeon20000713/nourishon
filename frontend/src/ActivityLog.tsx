@@ -36,7 +36,7 @@ export function ActivityLog({ data, onChange }: { data: WellnessData; onChange: 
     } catch { if (!controller.signal.aborted) setError('연령·날짜·체중·시간과 서버 연결을 확인해주세요. 기록은 추가되지 않았습니다.') }
     finally { if (!controller.signal.aborted) setBusy(false) }
   }
-  return <section className="activity-log" aria-labelledby="activity-log-title"><h2 id="activity-log-title">실제 운동 기록과 소모량 추정</h2>
+  return <section className="activity-log" aria-labelledby="activity-log-title"><h2 id="activity-log-title" tabIndex={-1}>실제 운동 기록과 소모량 추정</h2>
     <p>2024 Adult Compendium의 <b>19~59세 일반 성인</b> 표준 MET를 사용합니다. MET는 활동의 에너지 비용을 나타내는 값입니다. 60세 이상은 이번 계산에서 제외하며, BMI·인바디로 강도를 정하지 않습니다.</p>
     <p>걷기·러닝·근력·자전거·생활 스포츠 등을 분류별로 선택할 수 있습니다. 웨이트의 반복 수는 자료의 수행 조건이며 권장 반복 수가 아닙니다. 세트 수·중량을 자동 처방하지 않습니다.</p>
     <p>긴 휴식·대기·다른 종목을 섞은 전체 시간을 하나의 MET로 계산하면 오차가 커질 수 있습니다. 해당 조건으로 수행한 시간을 구분해 기록하세요.</p>

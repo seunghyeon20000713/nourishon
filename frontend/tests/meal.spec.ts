@@ -151,9 +151,11 @@ test('mobile navigation and missing daily totals remain distinct from zero', asy
   await expect(page.locator('.nutrient-grid').getByText('0 g',{exact:true})).toBeVisible()
   await expect(page.getByText('누락 2개 · 확인된 값만 합산',{exact:true})).toBeVisible()
   for(const name of ['내 몸과 목표','생활 개선','기록과 분석']) {
+    if(!await page.getByRole('button',{name,exact:true}).isVisible())await page.getByRole('button',{name:'상단 메뉴 펼치기',exact:true}).click()
     await page.getByRole('button',{name,exact:true}).click()
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   }
+  if(!await page.getByRole('button',{name:'생활 개선',exact:true}).isVisible())await page.getByRole('button',{name:'상단 메뉴 펼치기',exact:true}).click()
   await page.getByRole('button',{name:'생활 개선',exact:true}).click()
   await expect(page.getByText('식이섬유 정보가 누락되어 적정 여부를 판단할 수 없습니다.')).toBeVisible()
 })

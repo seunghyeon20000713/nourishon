@@ -9,7 +9,7 @@ test('영양 구성·기여 식품과 불일치 보류를 실제 API로 확인',
   const nutrients=Object.fromEntries(Object.entries(values).map(([k,n])=>[k,{unit:unit(k),consumed:n}]))
   const totals=Object.fromEntries(Object.entries(values).map(([k,n])=>[k,{unit:unit(k),known_total:n,missing_count:n===null?1:0,status:n===null?'missing':'complete'}]))
   localStorage.setItem('nourishon-local-mvp-v1',JSON.stringify({profile:null,estimate:null,records:[{id:'practice-review',date,kind:'점심',calculation:{foods:[{food_name:'연습용 식사',intake_g:100,nutrients}],totals}}]}))
- },energy);await page.reload();await page.getByRole('button',{name:'생활 개선',exact:true}).click()}
+ },energy);await page.reload();if(!await page.getByRole('button',{name:'생활 개선',exact:true}).isVisible())await page.getByRole('button',{name:'상단 메뉴 펼치기',exact:true}).click();await page.getByRole('button',{name:'생활 개선',exact:true}).click()}
  await fixture(200)
  await expect(page.getByRole('cell',{name:'60%',exact:true})).toBeVisible()
  await expect(page.getByText('연습용 식사: 800 mg',{exact:true})).toBeVisible()

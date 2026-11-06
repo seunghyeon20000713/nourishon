@@ -30,7 +30,7 @@ export function useServerProfiles(session:Session) {
    revision.current[id]=saved.revision
    // 응답 이후 새로 입력한 값은 유지하고, 마지막 저장은 서버의 검증된 계산값을 반영한다.
    if(alive.current){setProfiles(s=>s.map(p=>p.id===id&&p.data===data?saved:p));setError('')}
-  }).catch(e=>{blocked.current=true;if(alive.current)setError(`DB 저장 실패: ${(e as Error).message} 현재 입력은 화면에만 남아 있습니다.`)}).finally(()=>{if(alive.current)setSaving(n=>n-1)})
+  }).catch(e=>{blocked.current=true;if(alive.current)setError(`기록 저장 실패: ${(e as Error).message} 현재 입력은 화면에만 남아 있습니다.`)}).finally(()=>{if(alive.current)setSaving(n=>n-1)})
  },[activeId,session])
  async function register(nickname:string){if(!nickname.trim())return;try{const p:ServerProfile=await accountRequest('/account/profiles',session,{method:'POST',body:JSON.stringify({nickname:nickname.trim()})});if(alive.current){revision.current[p.id]=p.revision;setProfiles(s=>[...s,p]);setActiveId(p.id)}}catch(e){if(alive.current)setError((e as Error).message)}}
  return {data:profiles.find(p=>p.id===activeId)?.data??emptyData(),setData,profiles,activeId,register,

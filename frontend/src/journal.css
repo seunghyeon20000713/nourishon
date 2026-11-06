@@ -1446,3 +1446,54 @@ main {
 .activity-log select { width: 100%; white-space: normal; }
 .activity-estimate,.activity-record { padding: 18px; margin: 18px 0; background: #f6f9f3; border: 1px solid #dce6dc; border-radius: 8px; overflow-wrap: anywhere; }
 .activity-log button:not(.calculate-button) { padding: 9px 14px; background: white; border: 1px solid #b9cdbb; border-radius: 6px; color: #19573f; }
+
+/* 개인 사용자를 위한 일상 기록과 계정 진입 */
+.auth-mode-switch { display: flex; padding: 4px; gap: 4px; border-radius: 8px; background: #edf3e8; margin: 16px 0; }
+.account-tools .auth-mode-switch button { flex: 1; background: transparent; color: #4d6354; border: 0; }
+.account-tools .auth-mode-switch button[aria-pressed=true] { background: white; color: #174b36; box-shadow: 0 1px 5px #183e3010; }
+.account-tools .auth-entry form>button[type=submit] { width: 100%; margin-top: 8px; }
+.account-tools>summary { max-width: 178px; }
+.account-tools>summary span { max-width: 134px; }
+.app-shell .profile-tools { margin-right: 246px; }
+.profile-popup { max-height: calc(100svh - 140px); overflow-y: auto; }
+.personal-profile-intro strong { display: block; font-size: 15px; }
+.personal-profile-intro p { font-size: 12px; line-height: 1.8; color: #647366; }
+.personal-profile-link { width: 100%; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-radius: 7px; border: 0; background: #19573f; color: white; }
+.personal-profile-intro small { display: block; margin-top: 12px; color: #647366; }
+.advanced-profiles { border-top: 1px solid #e0e5e1; margin-top: 18px; padding-top: 15px; }
+.advanced-profiles>summary { font-size: 12px; color: #647366; }
+.advanced-profiles .profile-switcher { padding-top: 15px; }
+.daily-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.daily-actions article { padding: 22px; border: 1px solid #dce6dc; border-radius: 12px; background: #fbfcf8; }
+.daily-action-icon { display: flex; gap: 9px; align-items: center; color: #52735a; font-size: 12px; margin-bottom: 16px; }
+.daily-actions strong { font-size: 19px; font-weight: 650; letter-spacing: -.5px; }
+.daily-actions p { font-size: 12px; color: #647366; line-height: 1.7; margin: 10px 0 18px; }
+.daily-actions button { display: flex; align-items: center; gap: 14px; padding: 0; background: none; border: 0; color: #19573f; font-size: 12px; font-weight: 650; }
+.mobile-bottom-nav { display: none; }
+@media(max-width:1100px) { .journal-product { display: none; } }
+@media(max-width:700px) {
+ .app-shell .profile-tools { margin-right: 0; }
+ .journal-rail nav { display: none; }
+ .menu-expanded .journal-rail nav { display: flex; }
+ .daily-actions { grid-template-columns: 1fr; gap: 10px; margin: 18px 0; }
+ .daily-actions article { padding: 18px; position: relative; }
+ .daily-action-icon { margin-bottom: 8px; }
+ .daily-actions strong { font-size: 18px; }
+ .daily-actions p { margin: 8px 0 14px; }
+ .mobile-bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: #fff; border-top: 1px solid #dce6dc; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); }
+ .mobile-bottom-nav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #657366; border: 0; background: none; padding: 6px; font-size: 11px; }
+ .mobile-bottom-nav button[aria-current=page] { color: #19573f; background: #f1f6eb; border-radius: 8px; font-weight: 650; }
+ .menu-expanded .mobile-bottom-nav { display: none; }
+ #main { padding-bottom: 90px; }
+ .account-tools .account-banner { max-height: calc(100svh - 210px); overflow-y: auto; }
+}
+@media(max-width:700px) {
+ .daily-actions { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+ .daily-actions article { padding: 13px 10px; }
+ .daily-action-icon { gap: 5px; font-size: 11px; }
+ .daily-action-icon svg { width: 16px; height: 16px; }
+ .daily-actions strong { display: block; font-size: 12px; min-height: 40px; line-height: 1.7; }
+ .daily-actions p { display: none; }
+ .daily-actions button { font-size: 10px; gap: 3px; margin-top: 10px; }
+ .daily-actions button svg { width: 12px; height: 12px; }
+}

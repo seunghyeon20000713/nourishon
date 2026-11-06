@@ -11,7 +11,7 @@ export function GettingStarted({ data, onView }: { data: WellnessData; onView: (
   const next = steps.findIndex(step => !step.done)
   return <details className="getting-started" open={completed < steps.length}>
     <summary><span>{completed === steps.length ? '첫 이용 준비 완료' : '처음이라면 여기서 시작하세요'}</span><small>{completed} / {steps.length} 단계</small></summary>
-    <p className="getting-started-context">현재 선택한 프로필 기준입니다. 로그인 없이 시작할 수 있으며, 계정별 저장은 상단 ‘내 계정’에서 가입·로그인 후 사용할 수 있어요. 로컬 기록은 계정으로 자동 이동하지 않습니다.</p>
+    <p className="getting-started-context">현재 선택한 프로필 기준입니다. 로그인 없이 시작할 수 있으며, 계정별 저장은 상단 ‘로그인 / 회원가입’에서 로그인 후 사용할 수 있어요. 로컬 기록은 계정으로 자동 이동하지 않습니다.</p>
     <ol>{steps.map((step, index) => <li key={step.title} aria-current={index === next ? 'step' : undefined}>
       <span className={`getting-started-number ${step.done ? 'done' : ''}`}>{step.done ? <Check size={16} aria-label="완료"/> : `0${index + 1}`}</span>
       <h2>{step.title}</h2><p>{step.description}</p>
