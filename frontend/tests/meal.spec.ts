@@ -147,8 +147,8 @@ test('mobile navigation and missing daily totals remain distinct from zero', asy
   })
   await page.reload()
   await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
-  await expect(page.getByText('300 kcal',{exact:true})).toBeVisible()
-  await expect(page.getByText('0 g',{exact:true})).toBeVisible()
+  await expect(page.locator('.nutrient-grid').getByText('300 kcal',{exact:true})).toBeVisible()
+  await expect(page.locator('.nutrient-grid').getByText('0 g',{exact:true})).toBeVisible()
   await expect(page.getByText('누락 2개 · 확인된 값만 합산',{exact:true})).toBeVisible()
   for(const name of ['내 몸과 목표','생활 개선','기록과 분석']) {
     await page.getByRole('button',{name,exact:true}).click()

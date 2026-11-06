@@ -1414,3 +1414,26 @@ main {
 .meal-record-editor p { font-size: 12px; color: #596e5c; }
 .record>button+button { margin-left: 8px; }
 .measurement-table td button { display: inline-block; margin: 3px; padding: 7px 9px; border: 1px solid #dce6dc; border-radius: 6px; background: #f6f9f3; font-size: 12px; white-space: nowrap; }
+
+.period-analysis { border-top: 1px solid #dce6dc; margin-top: 28px; padding-top: 12px; }
+.period-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.period-heading button { padding: 8px 16px; border: 1px solid #dce6dc; background: white; color: #19573f; }
+.period-heading button[aria-pressed=true] { background: #19573f; color: white; }
+.period-limitation { color: #596e5c; font-size: 12px; }
+.period-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+.period-summary article { padding: 16px; border-radius: 8px; background: #f6f9f3; }
+.period-summary span,.period-summary strong,.period-summary small { display: block; }
+.period-summary span,.period-summary small { font-size: 12px; color: #596e5c; }
+.period-summary strong { font-size: 18px; margin: 8px 0; }
+.period-table { overflow-x: auto; max-width: 100%; }
+.period-table table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+.period-table caption { text-align: left; color: #596e5c; }
+.period-table td,.period-table th { padding: 12px; text-align: left; border-bottom: 1px solid #e0e5e1; }
+.period-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 8px; }
+.period-days button { padding: 10px 6px; border: 1px solid #dce6dc; background: white; border-radius: 6px; min-width: 0; }
+.period-days button.selected { border-color: #19573f; background: #f1f6eb; }
+.period-days b,.period-days span,.period-days small { display: block; font-size: 11px; }
+.period-days button:disabled { color: #7b857f; background: #f8f9f7; }
+.period-bar { height: 5px; background: #edf1e9; margin-top: 9px; border-radius: 4px; overflow: hidden; }
+.period-bar i { height: 5px; background: #558166; display: block; }
+@media(max-width:700px) { .period-summary { grid-template-columns: 1fr; } .period-days { grid-template-columns: repeat(3,minmax(0,1fr)); } }
