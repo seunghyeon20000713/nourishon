@@ -1,3 +1,4 @@
+import type { ExerciseInput, ExercisePlan } from './Exercise'
 import { Measurements } from './Measurements'
 import type { Measurement } from './Measurements'
 import { useState } from 'react'
@@ -6,7 +7,7 @@ export type Nutrient = { unit: string; known_total: number | null; missing_count
 export type Calculation = { foods?: {food_name:string; intake_g:number}[]; totals: Record<string,Nutrient> }
 export type MealRecord = { id:string; date:string; kind:string; calculation:Calculation }
 type Estimate = { bmi:number; maintenance_kcal:number; protein_reference_g:number; limitations:string[]; sources:{title:string;url:string}[]; macro_reference_ranges?: Record<string,{min_g:number;max_g:number;percent:number[]}> }
-export type WellnessData = { profile: Record<string,unknown>|null; estimate:Estimate|null; records:MealRecord[]; measurements?:Measurement[] }
+export type WellnessData = { profile: Record<string,unknown>|null; estimate:Estimate|null; records:MealRecord[]; measurements?:Measurement[]; exerciseInput?:ExerciseInput|null; exercisePlan?:ExercisePlan|null }
 export const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
 export const emptyData = ():WellnessData => ({profile:null,estimate:null,records:[]})
 export const storageKey = 'nourishon-local-mvp-v1'
@@ -44,7 +45,7 @@ export function Profile({data,onChange}:{data:WellnessData;onChange:(d:WellnessD
    const oldBody=data.profile?.body as Record<string,number|string>|undefined
    if(!history.length&&oldBody?.measured_on&&data.profile){history.push({id:crypto.randomUUID(),measured_on:String(oldBody.measured_on),weight_kg:Number(data.profile.weight_kg),...Object.fromEntries(['skeletal_muscle_kg','fat_mass_kg','body_fat_percent'].filter(k=>oldBody[k]!==undefined).map(k=>[k,Number(oldBody[k])]))})}
    const same=history.some(m=>m.measured_on===measurement.measured_on&&m.weight_kg===measurement.weight_kg&&m.skeletal_muscle_kg===measurement.skeletal_muscle_kg&&m.fat_mass_kg===measurement.fat_mass_kg&&m.body_fat_percent===measurement.body_fat_percent)
-   onChange({...data,profile,estimate,measurements:same?history:[...history,measurement]})}catch{setError('입력 범위·체성분 측정일과 서버 연결을 확인해주세요.')}finally{setBusy(false)}
+   onChange({...data,profile,estimate,exerciseInput:null,exercisePlan:null,measurements:same?history:[...history,measurement]})}catch{setError('입력 범위·체성분 측정일과 서버 연결을 확인해주세요.')}finally{setBusy(false)}
  }
  return <section className="panel wellness-panel"><h1>내 몸과 목표</h1><p>19~64세 일반 성인용 참고 계산입니다. 인바디 입력은 선택이며, 유지 에너지 공식에는 사용하지 않습니다.</p><form onSubmit={submit} className="profile-form">
  {([['age','나이 (세)',19,64],['height_cm','키 (cm)',100,250],['weight_kg','체중 (kg)',25,350]] as const).map(([key,label,min,max])=><label key={key}>{label}<input name={key} type="number" step={key==='age'?'1':'any'} min={min} max={max} required defaultValue={p[key] as number|undefined}/></label>)}

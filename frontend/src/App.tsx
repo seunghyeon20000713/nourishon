@@ -1,3 +1,7 @@
+import { Account } from './Account'
+import type { Session } from './Account'
+import { useServerProfiles } from './serverProfiles'
+import { Exercise } from './Exercise'
 import { Profile, History, Insights, today } from './Wellness'
 import { useLocalProfiles } from './localProfiles'
 import { Dashboard } from './Dashboard'
@@ -33,8 +37,14 @@ function BowlArt() {
 }
 
 export default function App() {
+  return <Account>{(session,onPending)=><Workspace key={session.user?.id??'local'} session={session} onPending={onPending}/>}</Account>
+}
+function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>void}) {
   const [view,setView] = useState('meal')
-  const {data,setData,profiles,activeId,register,select,persist,setPersist,storageError} = useLocalProfiles()
+  const localProfiles = useLocalProfiles()
+  const serverProfiles = useServerProfiles(session)
+  useEffect(()=>{onPending(serverProfiles.saving)},[serverProfiles.saving,onPending])
+  const {data,setData,profiles,activeId,register,select,persist,setPersist,storageError} = session.user ? serverProfiles : localProfiles
   const [nickname,setNickname] = useState('')
   const [mealDate,setMealDate] = useState(today())
   const [mealKind,setMealKind] = useState('아침')
@@ -134,7 +144,7 @@ export default function App() {
       <a className="brand" href="#main" aria-label="NourishOn 홈"><span className="brand-icon"><Sprout size={25} /></span>Nourish<span>On</span></a>
       <div className="sidebar-caption">MY WELLNESS SPACE</div>
       <nav aria-label="주 메뉴">
-        {([['meal','식사 분석'],['profile','내 몸과 목표'],['history','기록과 분석'],['insights','생활 개선']] as const).map(([key,label])=><button key={key} className={`nav-item ${view===key?'active':''}`} onClick={()=>setView(key)}>{key==='meal'?<Utensils size={19}/>:key==='profile'?<UserRound size={19}/>:<Activity size={19}/>} {label}</button>)}
+        {([['meal','식사 분석'],['profile','내 몸과 목표'],['history','기록과 분석'],['insights','생활 개선'],['exercise','운동 계획']] as const).map(([key,label])=><button key={key} className={`nav-item ${view===key?'active':''}`} onClick={()=>setView(key)}>{key==='meal'?<Utensils size={19}/>:key==='profile'?<UserRound size={19}/>:<Activity size={19}/>} {label}</button>)}
       </nav>
       <div className="sidebar-bottom">
         <div className="small-leaf"><Leaf size={24} /></div>
@@ -145,9 +155,11 @@ export default function App() {
     </aside>
 
     <main id="main">
-      <header className="topbar"><div>나의 공간 <ChevronRight size={14} /> <strong>{{meal:"식사 분석",profile:"내 몸과 목표",history:"기록과 분석",insights:"생활 개선"}[view]}</strong></div><span>{date}</span></header>
-      <section className="profile-switcher" aria-label="로컬 사용자 프로필 관리"><label>사용 중인 프로필<select aria-label="사용 중인 프로필" value={activeId} onChange={e=>select(e.target.value)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.nickname}</option>)}</select></label><form onSubmit={e=>{e.preventDefault();register(nickname);setNickname('')}}><label className="sr-only" htmlFor="nickname">새 프로필 별칭</label><input id="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="새 프로필 별칭" maxLength={20} required/><button type="submit">프로필 등록</button></form><small>로컬 테스트용 프로필 구분 · 로그인이나 접근 제한 기능이 아닙니다.</small></section>
-      <div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>기본은 실행 중에만 유지됩니다. 보관을 선택하면 등록한 모든 로컬 프로필과 기록이 암호화되지 않은 브라우저 저장소에 남으므로 공용 기기에서는 사용하지 마세요. 서버·GitHub에는 저장하지 않습니다.</p>{storageError&&<p role="alert">{storageError}</p>}</div>
+      <header className="topbar"><div>나의 공간 <ChevronRight size={14} /> <strong>{{meal:"식사 분석",profile:"내 몸과 목표",history:"기록과 분석",insights:"생활 개선",exercise:"운동 계획"}[view]}</strong></div><span>{date}</span></header>
+      <section className="profile-switcher" aria-label="로컬 사용자 프로필 관리"><label>사용 중인 프로필<select aria-label="사용 중인 프로필" value={activeId} onChange={e=>select(e.target.value)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.nickname}</option>)}</select></label><form onSubmit={e=>{e.preventDefault();register(nickname);setNickname('')}}><label className="sr-only" htmlFor="nickname">새 프로필 별칭</label><input id="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="새 프로필 별칭" maxLength={20} required/><button type="submit">프로필 등록</button></form><small>{session.user?'이 계정에 속한 프로필·측정·식사 기록을 구분합니다.':'로컬 테스트용 프로필 구분 · 로그인이나 접근 제한 기능이 아닙니다.'}</small></section>
+      {!session.user&&<div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>기본은 실행 중에만 유지됩니다. 보관을 선택하면 등록한 모든 로컬 프로필과 기록이 암호화되지 않은 브라우저 저장소에 남으므로 공용 기기에서는 사용하지 마세요. 서버·GitHub에는 저장하지 않습니다.</p>{storageError&&<p role="alert">{storageError}</p>}</div>}
+      {session.user&&<div className="storage-panel" role="status">{serverProfiles.saving?"DB 저장 중…":serverProfiles.loading?"DB 기록 불러오는 중…":storageError?storageError:"계정별 PostgreSQL 기록 · 저장 완료"}{storageError&&<button disabled={serverProfiles.saving>0} onClick={()=>{if(window.confirm("현재 화면의 임시 변경을 버리고 DB 기록을 다시 불러올까요?"))void serverProfiles.reload()}}>DB 기록 다시 불러오기</button>}</div>}
+      {view==='exercise'&&<Exercise key={activeId} data={data} onChange={setData} session={session} profileId={activeId}/>}
       {view==='profile'&&<Profile key={activeId} data={data} onChange={setData}/>}
       {view==='history'&&<History key={activeId} data={data} onChange={setData}/>}
       {view==='insights'&&<Insights data={data}/>}

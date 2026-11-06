@@ -57,3 +57,6 @@ credentials/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# DB 덤프는 제외하되 데이터가 없는 소스 마이그레이션은 보존
+!/backend/migrations/*.sql

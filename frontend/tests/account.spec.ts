@@ -1,0 +1,77 @@
+import { test, expect } from '@playwright/test'
+import { execFileSync } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
+import path from 'node:path'
+
+test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리', async ({page}) => {
+ const names:string[]=[]
+ const password=randomBytes(24).toString('base64url')
+ async function signup(){const name=`e2e_${randomBytes(8).toString('hex')}`;names.push(name)
+  await page.getByRole('button',{name:'회원가입으로 전환',exact:true}).click()
+  await page.getByLabel('아이디',{exact:true}).fill(name)
+  await page.getByLabel('비밀번호',{exact:true}).fill(password)
+  await page.getByRole('button',{name:'가입하고 시작',exact:true}).click()
+  await expect(page.getByText(`${name}님의 계정`,{exact:true})).toBeVisible()
+  await expect(page.getByText('계정별 PostgreSQL 기록 · 저장 완료',{exact:true})).toBeVisible()
+  return name
+ }
+ try{
+  await page.goto('/')
+  const a=await signup()
+  await page.getByRole('button',{name:'내 몸과 목표',exact:true}).click()
+  await page.getByLabel('나이 (세)',{exact:true}).fill('30')
+  await page.getByLabel('키 (cm)',{exact:true}).fill('170')
+  await page.getByLabel('체중 (kg)',{exact:true}).fill('70')
+  await page.getByLabel('임신·수유 중이').check()
+  await page.getByRole('button',{name:'프로필 적용 및 참고 목표 계산'}).click()
+  await expect(page.getByText('2167 kcal/일')).toBeVisible()
+  await expect(page.getByText('계정별 PostgreSQL 기록 · 저장 완료',{exact:true})).toBeVisible()
+  await page.getByRole('button',{name:'운동 계획',exact:true}).click()
+  await page.getByLabel('질환·부상·통증·의사의 운동 제한',{exact:true}).selectOption('no')
+  await page.getByLabel('현재 흉통·어지럼·비정상적인 호흡곤란',{exact:true}).selectOption('no')
+  await page.getByLabel('임신·수유·질환 치료·재활·전문 운동선수 관리가 아닌 일반 성인 참고용임을 확인했습니다.').check()
+  await page.getByRole('button',{name:'주간 활동 계획 만들기'}).click()
+  await expect(page.getByRole('heading',{name:'내 주간 계획 초안'})).toBeVisible()
+  await expect(page.getByText('계정별 PostgreSQL 기록 · 저장 완료',{exact:true})).toBeVisible()
+  await page.screenshot({path:'/tmp/nourishon-account-exercise.png',fullPage:true})
+  await page.setViewportSize({width:390,height:844})
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
+  await page.screenshot({path:'/tmp/nourishon-account-exercise-mobile.png',fullPage:true})
+  await page.setViewportSize({width:1280,height:900})
+  await page.getByRole('button',{name:'식사 분석',exact:true}).click()
+  await page.getByRole('textbox',{name:'음식 이름'}).fill('국밥_돼지머리')
+  await page.getByRole('button',{name:'검색',exact:true}).click()
+  await page.getByRole('button',{name:'국밥_돼지머리 추가',exact:true}).click()
+  await page.getByRole('button',{name:'영양 합계 계산'}).click()
+  await page.getByRole('button',{name:'식사 기록에 추가',exact:true}).click()
+  await expect(page.getByText('계정별 PostgreSQL 기록 · 저장 완료',{exact:true})).toBeVisible()
+  await page.reload()
+  await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
+  await expect(page.getByRole('heading',{name:/아침/})).toBeVisible()
+  await page.getByRole('button',{name:'로그아웃',exact:true}).click()
+  const b=await signup()
+  expect(a).not.toBe(b)
+  await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
+  await expect(page.getByText('이 날짜에 등록된 식사가 없습니다.')).toBeVisible()
+  await page.getByRole('button',{name:'내 몸과 목표',exact:true}).click()
+  await expect(page.getByLabel('체중 (kg)',{exact:true})).toBeEmpty()
+  await page.getByRole('button',{name:'로그아웃',exact:true}).click()
+  await page.getByLabel('아이디',{exact:true}).fill(a)
+  await page.getByLabel('비밀번호',{exact:true}).fill(password)
+  await page.getByRole('button',{name:'로그인',exact:true}).click()
+  await expect(page.getByText(`${a}님의 계정`,{exact:true})).toBeVisible()
+  await page.getByRole('button',{name:'기록과 분석',exact:true}).click()
+  await expect(page.getByRole('heading',{name:/아침/})).toBeVisible()
+  await page.getByRole('button',{name:'운동 계획',exact:true}).click()
+  await expect(page.getByRole('heading',{name:'내 주간 계획 초안'})).toBeVisible()
+  await page.getByLabel('질환·부상·통증·의사의 운동 제한',{exact:true}).selectOption('yes')
+  await page.getByLabel('현재 흉통·어지럼·비정상적인 호흡곤란',{exact:true}).selectOption('no')
+  await page.getByLabel('임신·수유·질환 치료·재활·전문 운동선수 관리가 아닌 일반 성인 참고용임을 확인했습니다.').check()
+  await page.getByRole('button',{name:'주간 활동 계획 만들기'}).click()
+  await expect(page.getByRole('heading',{name:'먼저 평가가 필요합니다'})).toBeVisible()
+ }finally{
+  // 이 시나리오가 만든 가상 계정만 정리한다. 실제 계정은 건드리지 않는다.
+  const script="import json,sys; from backend.database import connect,database_url; names=json.load(sys.stdin); assert all(n.startswith('e2e_') for n in names); conn=connect(database_url()); conn.execute('DELETE FROM users WHERE username = ANY(%s)',(names,)); conn.commit(); conn.close()"
+  execFileSync(path.resolve('../.venv/bin/python'),['-B','-c',script],{cwd:path.resolve('..'),input:JSON.stringify(names)})
+ }
+})

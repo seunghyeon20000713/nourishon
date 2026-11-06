@@ -1,4 +1,4 @@
-"""로컬 개발용 음식 검색·한 끼 계산 API. 인증·저장·외부 API 호출 없음."""
+"""로컬 음식 계산·회원·개인 기록 API. 외부 공개용 설정은 별도 단계."""
 
 import json
 from contextlib import asynccontextmanager
@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Query
+import psycopg
+from backend.accounts import router as account_router
+from backend.database import database_url as read_database_url
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
@@ -90,7 +93,7 @@ class FoodCatalog:
         return result
 
 
-def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None) -> FastAPI:
+def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, database_url: str | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
@@ -110,7 +113,31 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None) -
         del app.state.catalog
 
     app = FastAPI(title="NourishOn 로컬 API", version="0.1.0", lifespan=lifespan,
-                  description="로컬 단일 사용자 개발용입니다. 입력을 저장하지 않습니다.")
+                  description="로컬 개발용입니다. 로그인 후 개인 기록을 PostgreSQL에 저장합니다.")
+
+    app.state.database_url = database_url if database_url is not None else (read_database_url() if rows is None else None)
+    app.include_router(account_router)
+
+    @app.middleware("http")
+    async def private_response(request, call_next):
+        private = request.url.path.startswith(("/auth/", "/account/"))
+        if private and request.method in {"POST", "PUT", "PATCH"}:
+            chunks, size = [], 0
+            async for chunk in request.stream():
+                size += len(chunk)
+                if size > 2_000_000:
+                    return JSONResponse(status_code=413, content={"detail": "한 번에 저장할 기록이 너무 많습니다."}, headers={"Cache-Control":"no-store"})
+                chunks.append(chunk)
+            request._body = b"".join(chunks)
+        response = await call_next(request)
+        if private:
+            response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    @app.exception_handler(psycopg.Error)
+    async def database_error(request, error):
+        return JSONResponse(status_code=503, content={"detail": "DB 연결·저장 상태를 확인하세요. 입력 내용은 오류 응답에 포함하지 않습니다."}, headers={"Cache-Control":"no-store"})
 
     @app.exception_handler(RequestValidationError)
     async def invalid_input(request, error):
@@ -119,7 +146,7 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None) -
 
     @app.get("/health", summary="서버와 로컬 데이터 상태 확인")
     def health():
-        return {"status": "ok", "food_count": len(app.state.catalog.rows), "mode": "local_single_user"}
+        return {"status": "ok", "food_count": len(app.state.catalog.rows), "mode": "local_authenticated" if app.state.database_url else "local_single_user"}
 
     @app.get("/foods", response_model=SearchResult, summary="음식명 부분 검색")
     def foods(q: Annotated[str, Query(min_length=1, max_length=100)],
