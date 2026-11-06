@@ -17,10 +17,8 @@ from backend.activity_log import ActivityRecord, calculate_activity
 from backend.exercise import ExerciseInput, plan_exercise
 from backend.profile import ProfileInput, BodyComposition, estimate_profile
 
-COOKIE = 'nourishon_session'
 HASHER = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1)
 DUMMY = HASHER.hash(secrets.token_urlsafe(24))
-ORIGINS = {'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8000', 'http://127.0.0.1:8000'}
 Nickname = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=20)]
 router = APIRouter()
 
@@ -124,12 +122,12 @@ def dsn(request: Request):
 
 
 def mutation_guard(request: Request):
-    if request.headers.get('origin') not in ORIGINS or request.headers.get('x-nourishon-client') != 'web':
-        raise HTTPException(403, '허용된 로컬 화면에서 요청하세요.')
+    if request.headers.get('origin') not in request.app.state.settings.allowed_origins or request.headers.get('x-nourishon-client') != 'web':
+        raise HTTPException(403, '허용된 서비스 화면에서 요청하세요.')
 
 
 def session(request: Request, conn, write=False):
-    token = request.cookies.get(COOKIE, '')
+    token = request.cookies.get(request.app.state.settings.cookie_name, '')
     if not token or len(token) > 200:
         raise HTTPException(401, '로그인이 필요합니다.')
     row = conn.execute('SELECT s.*,u.username FROM sessions s JOIN users u ON u.id=s.user_id '
@@ -159,15 +157,15 @@ def throttle(request: Request, username: str):
 
 
 def new_session(request, response, conn, user):
-    old = request.cookies.get(COOKIE)
+    old = request.cookies.get(request.app.state.settings.cookie_name)
     if old:
         conn.execute('DELETE FROM sessions WHERE token_hash=%s', (hashlib.sha256(old.encode()).hexdigest(),))
     token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
     conn.execute('DELETE FROM sessions WHERE expires_at<now()')
     conn.execute('INSERT INTO sessions(token_hash,user_id,csrf_token,expires_at) VALUES(%s,%s,%s,now()+interval \'8 hours\')',
                  (hashlib.sha256(token.encode()).hexdigest(), user['id'], csrf))
-    # HTTP 로컬 전용. 외부 서비스 배포 시 HTTPS와 Secure 쿠키 설정이 필요하다.
-    response.set_cookie(COOKIE, token, httponly=True, samesite='strict', secure=False, max_age=28800, path='/')
+    # 외부 테스트는 HTTPS·호스트 한정 쿠키를 사용한다.
+    response.set_cookie(request.app.state.settings.cookie_name, token, httponly=True, samesite='strict', secure=request.app.state.settings.secure_cookie, max_age=28800, path='/')
     return {'user': {'id': str(user['id']), 'username': user['username']}, 'csrf_token': csrf, 'database_enabled': True}
 
 
@@ -176,7 +174,7 @@ def me(request: Request):
     if not request.app.state.database_url:
         return {'user': None, 'database_enabled': False}
     with connect(dsn(request)) as conn:
-        if not request.cookies.get(COOKIE):
+        if not request.cookies.get(request.app.state.settings.cookie_name):
             return {'user': None, 'database_enabled': True}
         row = session(request, conn)
         return {'user': {'id': str(row['user_id']), 'username': row['username']}, 'csrf_token': row['csrf_token'], 'database_enabled': True}
@@ -219,7 +217,7 @@ def logout(request: Request, response: Response):
     with connect(dsn(request)) as conn:
         row = session(request, conn, write=True)
         conn.execute('DELETE FROM sessions WHERE token_hash=%s', (row['token_hash'],))
-    response.delete_cookie(COOKIE, path='/')
+    response.delete_cookie(request.app.state.settings.cookie_name, path='/', secure=request.app.state.settings.secure_cookie, httponly=True, samesite='strict')
     return {'ok': True}
 
 

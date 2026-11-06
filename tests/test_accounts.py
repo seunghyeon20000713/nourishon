@@ -169,6 +169,29 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(response.json()['data']['activityRecords'], saved['data']['activityRecords'])
         self.assertEqual(self.client.get('/account/profiles').json()['profiles'][0]['data']['activityRecords'], saved['data']['activityRecords'])
 
+    def test_staging_secure_cookie_and_readiness(self):
+        from unittest.mock import patch
+        from backend.settings import load_settings
+        from tests.test_deployment import ENV
+        with patch.dict(os.environ,ENV,clear=True):
+            settings=load_settings()
+        app=create_app(rows=[practice_row('practice-1','가상')],database_url=TEST_DSN,settings=settings)
+        with TestClient(app,base_url='https://preview.example.com') as client:
+            name='practice_'+uuid4().hex[:16];self.names.append(name)
+            headers={'Origin':'https://preview.example.com','X-NourishOn-Client':'web'}
+            response=client.post('/auth/register',json={'username':name,'password':secrets.token_urlsafe(24)},headers=headers)
+            self.assertEqual(response.status_code,201)
+            cookie=response.headers['set-cookie']
+            self.assertIn('__Host-nourishon_session=',cookie)
+            self.assertIn('Secure',cookie)
+            self.assertIn('HttpOnly',cookie)
+            self.assertIn('SameSite=strict',cookie)
+            self.assertNotIn('Domain=',cookie)
+            self.assertEqual(client.get('/account/profiles').status_code,200)
+            self.assertEqual(client.get('/ready').status_code,200)
+            self.assertEqual(client.post('/auth/logout',headers=headers|{'X-CSRF-Token':response.json()['csrf_token']}).status_code,200)
+            self.assertFalse(client.cookies.get('__Host-nourishon_session'))
+
     def test_request_body_limit(self):
         r=self.client.post('/auth/register',content=b'x'*2_000_001,headers=HEADERS|{'Content-Type':'application/json'})
         self.assertEqual(r.status_code,413)

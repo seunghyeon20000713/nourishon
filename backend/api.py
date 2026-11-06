@@ -9,7 +9,9 @@ from fastapi import FastAPI, HTTPException, Query
 import psycopg
 from backend.activity_log import ACTIVITIES, ActivityRecord, calculate_activity
 from backend.accounts import router as account_router, Measurement
-from backend.database import database_url as read_database_url
+from backend.database import database_url as read_database_url, connect
+from backend.settings import Settings, load_settings
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
@@ -97,7 +99,9 @@ class FoodCatalog:
         return result
 
 
-def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, database_url: str | None = None) -> FastAPI:
+def create_app(data_path: Path | None = None, rows: list[dict] | None = None, database_url: str | None = None, settings: Settings | None = None) -> FastAPI:
+    settings = settings or load_settings()
+    data_path = data_path or settings.food_path or DEFAULT_DATA
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
@@ -117,14 +121,24 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
         del app.state.catalog
 
     app = FastAPI(title="NourishOn 로컬 API", version="0.1.0", lifespan=lifespan,
-                  description="로컬 개발용입니다. 로그인 후 개인 기록을 PostgreSQL에 저장합니다.")
+                  description="로그인 후 개인 기록을 PostgreSQL에 저장합니다.",
+                  docs_url=None if settings.mode=='staging' else '/docs',
+                  redoc_url=None if settings.mode=='staging' else '/redoc',
+                  openapi_url=None if settings.mode=='staging' else '/openapi.json')
 
-    app.state.database_url = database_url if database_url is not None else (read_database_url() if rows is None else None)
+    app.state.settings = settings
+    app.state.database_url = database_url if database_url is not None else (settings.database_url if settings.mode == 'staging' else (read_database_url() if rows is None else None))
+    if settings.mode == 'staging':
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
     app.include_router(account_router)
 
     @app.middleware("http")
     async def private_response(request, call_next):
-        private = request.url.path.startswith(("/auth/", "/account/", "/nutrition/", "/measurements/", "/activities/"))
+        path = request.scope['path']
+        root = request.scope.get('root_path', '')
+        if root and path.startswith(root):
+            path = path[len(root):]
+        private = path.startswith(("/auth/", "/account/", "/nutrition/", "/measurements/", "/activities/", "/profile/", "/meals/"))
         if private and request.method in {"POST", "PUT", "PATCH"}:
             chunks, size = [], 0
             async for chunk in request.stream():
@@ -148,9 +162,23 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
         # 기본 검증 오류에 포함될 수 있는 입력 본문을 응답에 복사하지 않는다.
         return JSONResponse(status_code=422, content={"detail": "입력 형식·범위·필수 항목을 확인하세요."})
 
+    @app.get("/ready", summary="식품·DB 스키마 준비 확인")
+    def ready():
+        try:
+            if not app.state.database_url:
+                raise ValueError
+            with connect(app.state.database_url) as conn:
+                versions = {row['version'] for row in conn.execute('SELECT version FROM schema_migrations')}
+                if not {1, 2}.issubset(versions):
+                    raise ValueError
+                conn.execute('SELECT activity_records FROM profiles LIMIT 0')
+            return {'status': 'ready'}
+        except (psycopg.Error, ValueError):
+            return JSONResponse(status_code=503, content={'status':'not_ready'}, headers={'Cache-Control':'no-store'})
+
     @app.get("/health", summary="서버와 로컬 데이터 상태 확인")
     def health():
-        return {"status": "ok", "food_count": len(app.state.catalog.rows), "mode": "local_authenticated" if app.state.database_url else "local_single_user"}
+        return {"status": "ok", "food_count": len(app.state.catalog.rows), "mode": f"{settings.mode}_authenticated" if app.state.database_url else "local_single_user"}
 
     @app.get("/foods", response_model=SearchResult, summary="음식명 부분 검색")
     def foods(q: Annotated[str, Query(min_length=1, max_length=100)],

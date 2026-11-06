@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def database_url() -> str | None:
     if os.environ.get('NOURISHON_DATABASE_URL'):
         return os.environ['NOURISHON_DATABASE_URL']
+    if os.environ.get('NOURISHON_ENV') == 'staging':
+        return None
     path = ROOT / '.env.database'
     if not path.exists():
         return None
@@ -61,8 +63,8 @@ if __name__ == '__main__':
     if args.command == 'setup-local':
         setup_local()
     else:
-        dsn = database_url()
+        dsn = os.environ.get('NOURISHON_MIGRATION_DATABASE_URL') or (database_url() if os.environ.get('NOURISHON_ENV') != 'staging' else None)
         if not dsn:
-            parser.exit(1, 'DB 설정이 필요합니다.\n')
+            parser.exit(1, '마이그레이션용 DB 설정이 필요합니다. 외부 테스트에서는 NOURISHON_MIGRATION_DATABASE_URL을 별도로 지정하세요.\n')
         migrate(dsn)
         print('스키마 마이그레이션 완료')

@@ -1,0 +1,6 @@
+# 호스팅 서비스의 환경변수 화면에 설정합니다. 이 파일에는 실제 비밀값을 쓰지 마세요.
+NOURISHON_ENV=staging
+NOURISHON_ALLOWED_ORIGINS=https://your-test-service.example.com
+NOURISHON_DATABASE_URL=postgresql://app-user:REPLACE_IN_HOSTING_SETTINGS@db.example.com/nourishon_staging?sslmode=require
+NOURISHON_FOOD_DATA_PATH=/srv/nourishon-food/foods.json
+NOURISHON_FRONTEND_DIST=/srv/nourishon/frontend/dist
