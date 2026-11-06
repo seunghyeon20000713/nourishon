@@ -1377,3 +1377,32 @@ main {
 .getting-started button { display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; padding: 6px 0; color: #19573f; font-weight: 600; font-size: 12px; }
 .getting-started li>small { display: block; margin-top: 8px; font-size: 10px; color: #596e5c; }
 @media(max-width:700px) { .getting-started { padding: 16px; } .getting-started ol { grid-template-columns: 1fr; } .getting-started li p { min-height: 0; } }
+
+/* 양쪽 햄버거 버튼은 같은 내비게이션의 펼침 상태를 공유한다. */
+.menu-toggle { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 42px; height: 42px; border: 1px solid #e0e5e1; border-radius: 8px; background: white; color: #284735; }
+.menu-toggle:hover { background: #f0f5eb; }
+.rail-menu-toggle { margin-top: 14px; }
+.journal-rail nav { margin-top: 18px; }
+.top-menu-toggle { position: absolute; right: 24px; top: 22px; }
+.app-shell .profile-tools { margin-right: 198px; }
+.account-tools { right: 84px; }
+.menu-expanded .journal-rail.sidebar { width: 232px; align-items: flex-start; box-shadow: 8px 0 24px #183e300d; }
+.menu-expanded .rail-logo { margin-left: 3px; }
+.menu-expanded .rail-menu-toggle { margin-left: 6px; }
+.menu-expanded .journal-rail .nav-item { width: 100%; justify-content: flex-start; gap: 15px; padding: 0 16px; }
+.menu-expanded .journal-rail .nav-item>span { position: static; opacity: 1; background: none; color: inherit; padding: 0; pointer-events: auto; font-size: 13px; }
+.menu-expanded .journal-rail .nav-item svg { flex: none; }
+@media(min-width:1100px) { .menu-expanded #main { margin-left: 232px; } }
+@media(max-width:700px) {
+  .rail-menu-toggle { margin: 0; width: 34px; height: 38px; }
+  .journal-rail nav { margin-top: 0; }
+  .top-menu-toggle { top: 10px; right: 14px; width: 34px; height: 34px; }
+  .account-tools { right: 62px; }
+  .app-shell .profile-tools { margin-right: 0; }
+  .journal-topbar { padding-right: 55px; }
+  .menu-expanded .journal-rail.sidebar { width: 100%; align-items: center; box-shadow: none; }
+  .menu-expanded .rail-logo,.menu-expanded .rail-menu-toggle { margin: 0; }
+  .menu-expanded .journal-rail nav { position: absolute; top: 60px; left: 0; width: min(290px, 100vw); padding: 14px; background: white; border: 1px solid #e0e5e1; border-radius: 0 0 12px 0; box-shadow: 8px 12px 25px #183e3020; display: flex; flex-direction: column; gap: 6px; }
+  .menu-expanded .journal-rail .nav-item { flex: none; flex-direction: row; height: 48px; }
+}
+.menu-expanded .journal-rail.sidebar { z-index: 60; }

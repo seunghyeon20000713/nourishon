@@ -8,7 +8,7 @@ const Dashboard = lazy(()=>import('./Dashboard').then(m=>({default:m.Dashboard})
 import type { Calculation } from './Wellness'
 import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import type { FormEvent } from 'react'
-import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight,
+import { Menu, X, Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight,
   CircleAlert, CircleHelp, Flame, Leaf, LoaderCircle, Plus, Salad, Search,
   ShieldCheck, Trash2, UserRound, Utensils, ChartColumn, CalendarDays, TrendingUp, Settings, ChevronDown } from 'lucide-react'
 
@@ -33,6 +33,13 @@ export default function App() {
 }
 function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>void}) {
   const [view,setView] = useState('dashboard')
+  const [menuOpen,setMenuOpen] = useState(false)
+  const menuToggle = useRef<HTMLButtonElement>(null)
+  useEffect(()=>{
+    const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'&&menuOpen){setMenuOpen(false);menuToggle.current?.focus()}}
+    document.addEventListener('keydown',escape)
+    return()=>document.removeEventListener('keydown',escape)
+  },[menuOpen])
   const [historyDay,setHistoryDay] = useState(today())
   const localProfiles = useLocalProfiles()
   const serverProfiles = useServerProfiles(session)
@@ -132,16 +139,18 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
   const hasMissing = calculation && Object.values(calculation.totals).some(n => n.status !== 'complete')
   const date = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', weekday: 'long', timeZone: 'Asia/Seoul' }).format(new Date())
 
-  return <div className="app-shell">
+  return <div className={`app-shell ${menuOpen?'menu-expanded':''}`}>
     <aside className="sidebar journal-rail">
       <button className="rail-logo" aria-label="NourishOn 홈" onClick={()=>setView('dashboard')}><img src="/brand/nourishon-mark.png" alt=""/></button>
-      <nav aria-label="주 메뉴">
-        {([['dashboard','영양 대시보드',ChartColumn],['meal','식사 분석',Utensils],['history','기록과 분석',CalendarDays],['insights','생활 개선',TrendingUp],['exercise','운동 계획',Activity],['profile','내 몸과 목표',UserRound]] as const).map(([key,label,Icon])=><button key={key} className={`nav-item ${view===key?'active':''}`} aria-label={label} title={label} aria-current={view===key?'page':undefined} onClick={()=>setView(key)}><Icon size={23}/><span>{label}</span></button>)}
+      <button ref={menuToggle} className="menu-toggle rail-menu-toggle" aria-label="왼쪽 메뉴 펼치기" aria-expanded={menuOpen} aria-controls="workspace-navigation" onClick={()=>setMenuOpen(open=>!open)}>{menuOpen?<X size={23}/>:<Menu size={23}/>}</button>
+      <nav id="workspace-navigation" aria-label="주 메뉴">
+        {([['dashboard','영양 대시보드',ChartColumn],['meal','식사 분석',Utensils],['history','기록과 분석',CalendarDays],['insights','생활 개선',TrendingUp],['exercise','운동 계획',Activity],['profile','내 몸과 목표',UserRound]] as const).map(([key,label,Icon])=><button key={key} className={`nav-item ${view===key?'active':''}`} aria-label={label} title={label} aria-current={view===key?'page':undefined} onClick={()=>{setView(key);setMenuOpen(false)}}><Icon size={23}/><span>{label}</span></button>)}
       </nav>
       <button className="rail-settings" aria-label="계정 설정" title="계정 설정" onClick={()=>{const el=document.getElementById('account-tools') as HTMLDetailsElement|null;if(el){el.open=!el.open;el.querySelector('summary')?.focus()}}}><Settings size={22}/></button>
     </aside>
     <main id="main">
       <header className="journal-topbar"><button className="journal-wordmark" onClick={()=>setView('dashboard')}>NourishOn</button><div className="journal-product">영양 분석 저널 <span>Nutrition Analysis Journal</span></div><button className="record-primary" onClick={()=>setView('meal')}><Plus size={18}/> 식사 기록</button>
+      <button className="menu-toggle top-menu-toggle" aria-label="상단 메뉴 펼치기" aria-expanded={menuOpen} aria-controls="workspace-navigation" onClick={()=>setMenuOpen(open=>!open)}>{menuOpen?<X size={22}/>:<Menu size={22}/>}</button>
       <details className="profile-tools"><summary><UserRound size={18}/><span>내 프로필</span><ChevronDown size={14}/></summary><div className="profile-popup">
        <section className="profile-switcher" aria-label="사용자 프로필 관리"><label>사용 중인 프로필<select aria-label="사용 중인 프로필" value={activeId} onChange={e=>select(e.target.value)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.nickname}</option>)}</select></label><form onSubmit={async e=>{e.preventDefault();await register(nickname);setNickname('')}}><label className="sr-only" htmlFor="nickname">새 프로필 별칭</label><input id="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="새 프로필 별칭" maxLength={20} required/><button type="submit">프로필 등록</button></form><small>{session.user?'이 계정에 속한 프로필·측정·식사 기록을 구분합니다.':'로컬 프로필은 로그인이나 접근 제한 기능이 아닙니다.'}</small></section>
        {!session.user&&<div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>선택한 모든 로컬 기록이 암호화되지 않은 브라우저 저장소에 남습니다. 공용 기기에서는 사용하지 마세요. 서버에 자동 업로드하지 않습니다.</p></div>}
