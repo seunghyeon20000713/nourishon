@@ -6,7 +6,7 @@ test('실제 검색 → 추가 → 150g 계산 → 변경 시 결과 초기화 �
   page.on('pageerror', error => errors.push(error.message))
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
   await page.setViewportSize({ width: 1440, height: 1100 })
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await expect(page.getByText('290,871개 식품 정보와 연결됐어요')).toBeVisible()
   await page.evaluate(() => document.fonts.load('16px "Noto Sans KR Variable"', '한글'))
@@ -44,7 +44,7 @@ test('전체 결측·부분 결측·숫자 0을 다르게 표시', async ({ page
       fiber: value(null, 'g', 'missing', 2), sodium: value(5, 'mg'),
     } } })
   })
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await page.getByRole('textbox', { name: '음식 이름' }).fill('연습용')
   await page.getByRole('button', { name: '검색', exact: true }).click()
@@ -59,7 +59,7 @@ test('전체 결측·부분 결측·숫자 0을 다르게 표시', async ({ page
 
 test('검색 결과 없음과 연결 오류를 안내', async ({ page }) => {
   await page.route('**/api/foods?**', route => route.fulfill({ json: { total: 0, offset: 0, limit: 8, items: [] } }))
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await page.getByRole('textbox', { name: '음식 이름' }).fill('연습용 없는 이름')
   await page.getByRole('button', { name: '검색', exact: true }).click()
@@ -72,7 +72,7 @@ test('검색 결과 없음과 연결 오류를 안내', async ({ page }) => {
 
 test('모바일 폭에서 검색·선택·계산과 가로 넘침 확인', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await page.getByRole('textbox', { name: '음식 이름' }).fill('국밥_돼지머리')
   await page.getByRole('button', { name: '검색', exact: true }).click()
@@ -90,7 +90,7 @@ test('검색 페이지 이동과 빈 섭취량 안내', async ({ page }) => {
       food_name: `연습용 음식 ${index + 1}`, basis: '100g', source_name: '가상 자료' }))
     return route.fulfill({ json: { total: 9, offset, limit: 8, items: items.slice(offset, offset + 8) } })
   })
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await page.getByRole('textbox', { name: '음식 이름' }).fill('연습용')
   await page.getByRole('button', { name: '검색', exact: true }).click()
@@ -104,7 +104,7 @@ test('검색 페이지 이동과 빈 섭취량 안내', async ({ page }) => {
 })
 
 test('profile and meal records connect to analysis with optional browser storage', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await page.getByRole('button', { name: '내 몸과 목표', exact: true }).click()
   await page.getByLabel('나이 (세)', { exact: true }).fill('30')
@@ -135,7 +135,7 @@ test('profile and meal records connect to analysis with optional browser storage
 
 test('mobile navigation and missing daily totals remain distinct from zero', async ({page}) => {
   await page.setViewportSize({width:390,height:844})
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await page.evaluate(() => {
     const date = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
@@ -159,7 +159,7 @@ test('mobile navigation and missing daily totals remain distinct from zero', asy
 })
 
 test('로컬 프로필별 기록 분리와 체중 측정 이력', async ({page}) => {
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await openProfiles(page)
   await page.getByLabel('새 프로필 별칭').fill('연습 A')
@@ -222,7 +222,7 @@ test('로컬 프로필별 기록 분리와 체중 측정 이력', async ({page})
 })
 
 test('읽지 못한 기존 저장본은 자동으로 덮어쓰지 않는다', async ({page}) => {
-  await page.goto('/')
+  await page.goto('/#dashboard')
   await page.getByRole('button',{name:'식사 분석',exact:true}).click()
   await page.evaluate(()=>localStorage.setItem('nourishon-local-mvp-v1','practice-unsupported-format'))
   await page.reload()

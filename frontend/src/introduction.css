@@ -1,0 +1,55 @@
+.intro-page { --intro-green:#184e39; color:#183a2d; background:#f7f8f3; font-family:'Noto Sans KR Variable',sans-serif; }
+.intro-page[hidden], [hidden] { display:none!important; }
+.intro-page * { box-sizing:border-box; }
+.intro-page a { color:inherit; text-decoration:none; }
+.intro-page a:focus-visible { outline:3px solid #9b6b2b; outline-offset:6px; }
+.intro-header { height:92px; max-width:1320px; margin:auto; padding:0 60px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #dfe5dc; }
+.intro-brand { display:flex; align-items:center; font-family:'Manrope Variable',sans-serif; font-size:25px; font-weight:800; letter-spacing:-1px; }
+.intro-brand img { width:65px; height:65px; object-fit:contain; margin-left:-15px; }
+.intro-start { display:flex; gap:14px; align-items:center; font-size:13px; font-weight:650; }
+.intro-hero { max-width:1320px; margin:auto; padding:90px 90px 100px; min-height:calc(100svh - 92px); display:grid; grid-template-columns:1.25fr 1fr; align-items:center; gap:80px; position:relative; }
+.intro-kicker { font-family:'Manrope Variable',sans-serif; font-size:11px; font-weight:750; letter-spacing:2px; color:#52715e; }
+.intro-hero h1 { font-size:clamp(42px,5vw,70px); line-height:1.28; letter-spacing:-3px; font-weight:600; margin:24px 0; }
+.intro-hero h1 em { font-style:normal; color:#558068; }
+.intro-lead { font-size:16px; line-height:1.95; color:#5d6b60; margin:0 0 32px; }
+.intro-primary { display:inline-flex; gap:30px; align-items:center; padding:18px 25px; background:var(--intro-green); color:white!important; border-radius:6px; font-size:14px; font-weight:600; transition:background .2s,transform .2s; }
+.intro-primary:hover { background:#276b50; transform:translateY(-2px); }
+.intro-local { font-size:11px; color:#657365; margin-top:15px; }
+.intro-preview { background:#e9efdf; padding:30px; border-radius:120px 120px 12px 12px; max-width:400px; width:100%; justify-self:end; transform:rotate(2deg); }
+.intro-preview-top { display:flex; align-items:center; justify-content:space-between; font-size:9px; letter-spacing:1.3px; padding-top:10px; }
+.intro-preview>p:not(.intro-example-note) { font-size:24px; line-height:1.55; letter-spacing:-1px; margin:28px 0 18px; }
+.intro-plate { width:190px; height:190px; margin:20px auto; background:#fafcf6; border:14px solid #d8e3cb; outline:1px solid #c5d5b6; border-radius:50%; display:grid; place-items:center; box-shadow:0 15px 35px #183a2d0a; }
+.intro-plate>span { font:600 50px 'Manrope Variable',sans-serif; text-align:center; }
+.intro-plate small { display:block; font:12px 'Noto Sans KR Variable',sans-serif; margin-top:4px; }
+.intro-example { display:flex; flex-direction:column; align-items:center; gap:10px; font-size:12px; }
+.intro-example strong { font-size:24px; letter-spacing:-1px; }
+.intro-example small { font-size:13px; }
+.intro-example-note { text-align:center; font-size:10px; color:#53674f; margin-top:22px; }
+.intro-scroll { position:absolute; bottom:26px; left:90px; display:flex; align-items:center; gap:10px; color:#657365!important; font-size:11px; }
+.intro-process { max-width:1320px; margin:auto; padding:110px 90px; display:grid; grid-template-columns:1fr 1fr; gap:90px; align-items:start; border-top:1px solid #dfe5dc; scroll-margin-top:30px; }
+.intro-sticky { position:sticky; top:100px; }
+.intro-sticky h2,.intro-finish h2 { font-size:clamp(30px,3.1vw,44px); line-height:1.5; letter-spacing:-1.7px; font-weight:600; margin:22px 0; }
+.intro-sticky>p:not(.intro-kicker) { color:#647263; font-size:14px; line-height:1.9; }
+.intro-side-note { display:block; margin-top:70px; font-size:11px; color:#647263; }
+.intro-story { display:flex; flex-direction:column; gap:70px; }
+.intro-step { min-height:450px; background:white; border:1px solid #e1e7dc; border-radius:12px; padding:36px; }
+.intro-step-number { display:block; font:11px 'Manrope Variable',sans-serif; color:#647263; letter-spacing:1px; margin-bottom:35px; }
+.intro-step h3 { font-size:25px; letter-spacing:-1px; margin:22px 0 14px; }
+.intro-step>p { font-size:14px; line-height:1.9; color:#586957; }
+.intro-mini { margin:26px 0; border-top:1px solid #e4eadf; }
+.intro-mini span { display:block; padding:12px 0; font-size:12px; border-bottom:1px solid #e4eadf; }
+.intro-step .intro-footnote { font-size:11px; line-height:1.85; color:#687467; }
+.intro-formula { margin:30px 0; background:#f0f4ea; padding:22px; display:flex; flex-direction:column; gap:10px; font-size:14px; text-align:center; }
+.intro-finish { text-align:center; padding:110px 24px 130px; background:#eaf0e3; }
+.intro-finish>p:not(.intro-kicker) { font-size:14px; color:#586957; margin:0 0 28px; }
+.intro-footer { max-width:1320px; margin:auto; padding:40px 60px; display:flex; flex-wrap:wrap; align-items:center; gap:15px 30px; }
+.intro-footer strong { font-family:'Manrope Variable',sans-serif; }
+.intro-footer p,.intro-footer>span { font-size:10px; color:#657365; }
+.intro-footer>span { margin-left:auto; }
+.intro-animated .intro-reveal:not(.is-visible) { opacity:0; transform:translateY(35px); }
+.intro-reveal { transition:opacity .7s ease,transform .7s ease; }
+.intro-skip { position:fixed; top:0; left:15px; transform:translateY(-150%); z-index:100; padding:12px; background:white; }
+.intro-skip:focus { transform:translateY(0); }
+@media(min-width:900px) and (prefers-reduced-motion:no-preference) { .intro-preview { animation:intro-arrive 1s ease both; } @keyframes intro-arrive { from { opacity:0; transform:translateY(25px) rotate(0); } to { opacity:1; transform:translateY(0) rotate(2deg); } } }
+@media(max-width:800px) { .intro-header { height:76px; padding:0 24px; } .intro-brand { font-size:21px; } .intro-hero { padding:60px 28px 85px; gap:45px; grid-template-columns:1fr; } .intro-hero h1 { font-size:48px; } .intro-preview { justify-self:center; max-width:350px; } .intro-scroll { left:28px; bottom:25px; } .intro-process { padding:65px 24px; grid-template-columns:1fr; gap:40px; } .intro-sticky { position:static; } .intro-side-note { margin-top:25px; } .intro-story { gap:25px; } .intro-step { min-height:0; padding:28px; } .intro-finish { padding:70px 24px; } .intro-footer { padding:30px 24px; display:block; } .intro-start { gap:6px; font-size:11px; } }
+@media(prefers-reduced-motion:reduce) { .intro-page *, .intro-reveal { animation:none!important; transition:none!important; } .intro-animated .intro-reveal:not(.is-visible) { opacity:1; transform:none; } }

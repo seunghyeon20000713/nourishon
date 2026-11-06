@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test'
 
 async function seedJournal(page:import('@playwright/test').Page){
- await page.goto('/')
+ await page.goto('/#dashboard')
  await page.evaluate(()=>{
   const today='2026-11-06'
   const totals=(energy:number)=>{const values={energy,carbohydrate:energy*.55/4,protein:energy*.18/4,fat:energy*.27/9,sodium:energy*1600/1500,fiber:null,sugar:0};return Object.fromEntries(Object.entries(values).map(([key,v])=>[key,{unit:key==='energy'?'kcal':key==='sodium'?'mg':'g',known_total:v,missing_count:v===null?1:0,status:v===null?'missing':'complete'}]))}

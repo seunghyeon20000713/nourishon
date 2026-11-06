@@ -17,7 +17,7 @@ test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리',
   return name
  }
  try{
-  await page.goto('/')
+  await page.goto('/#dashboard')
   const a=await signup()
   await page.getByRole('button',{name:'내 몸과 목표',exact:true}).click()
   await page.getByLabel('나이 (세)',{exact:true}).fill('30')

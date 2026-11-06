@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test'
 
 test('영양 구성·기여 식품과 불일치 보류를 실제 API로 확인',async({page})=>{
- await page.goto('/')
+ await page.goto('/#dashboard')
  async function fixture(energy:number){await page.evaluate(energy=>{
   const date=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
   const values:Record<string,number|null>={energy,carbohydrate:30,protein:10,fat:5,sodium:800,fiber:null,sugar:0}

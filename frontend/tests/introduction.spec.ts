@@ -1,0 +1,26 @@
+import { test, expect } from '@playwright/test'
+
+test('소개 스크롤, 모바일, 동작 줄이기와 대시보드 연결', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('내 몸을 이해하고')
+  await expect(page.getByText('연습용 수치 · 실제 식품·개인 기록이 아닙니다.')).toBeVisible()
+  const lastStep = page.locator('.intro-step').last()
+  await lastStep.scrollIntoViewIfNeeded()
+  await expect(lastStep).toHaveClass(/is-visible/)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.locator('.intro-step').first()).toHaveCSS('opacity', '1')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: '/tmp/nourishon-intro-mobile.png', fullPage: true })
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.screenshot({ path: '/tmp/nourishon-intro-desktop.png', fullPage: true })
+  await page.getByRole('link', { name: '내 식사 관리 시작하기' }).click()
+  await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible()
+  await expect(page.locator('.intro-page')).toBeHidden()
+  await page.goBack()
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  expect(errors).toEqual([])
+})
