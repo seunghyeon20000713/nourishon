@@ -9,6 +9,7 @@ Number = Annotated[float, Field(strict=True, allow_inf_nan=False)]
 ENERGY_SOURCE = "https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/equations-estimate-energy-requirement.html"
 PROTEIN_SOURCE = "https://www.healthlinkbc.ca/healthlinkbc-files/protein-and-your-health"
 DIET_SOURCE = "https://www.who.int/news-room/fact-sheets/detail/healthy-diet"
+KDRI_SOURCE = "https://www.kns.or.kr/fileroom/fileroom_view.asp?BoardID=Kdr&idx=168"
 ACTIVITY_SOURCE = "https://www.who.int/europe/news-room/fact-sheets/item/physical-activity"
 COEFFICIENTS = {
     "male": {"inactive": (753.07, -10.83, 6.50, 14.10),
@@ -40,11 +41,16 @@ class ProfileInput(BaseModel):
     goal: Literal["maintain", "lose", "gain"] = "maintain"
     scope_confirmed: Literal[True]
     body: BodyComposition | None = None
+    measured_on: date | None = None
 
     @model_validator(mode="after")
     def check_body(self):
+        today = datetime.now(timezone(timedelta(hours=9))).date()
+        if self.measured_on and self.measured_on > today:
+            raise ValueError("측정일은 미래일 수 없습니다.")
         if self.body:
-            today = datetime.now(timezone(timedelta(hours=9))).date()
+            if self.measured_on and self.measured_on != self.body.measured_on:
+                raise ValueError("체중과 체성분은 같은 측정일로 입력하세요.")
             if self.body.measured_on > today:
                 raise ValueError("측정일은 미래일 수 없습니다.")
             if all(v is None for v in (self.body.skeletal_muscle_kg,
@@ -70,17 +76,25 @@ def estimate_profile(profile: ProfileInput) -> dict:
         "protein_reference_g": round(profile.weight_kg * 0.8, 1),
         "fiber_reference_g": 25,
         "sodium_reference_mg": 2000,
+        "macro_reference_ranges": {
+            key: {"percent": [low, high], "min_g": round(energy * low / 100 / kcal_per_g, 1),
+                  "max_g": round(energy * high / 100 / kcal_per_g, 1)}
+            for key, low, high, kcal_per_g in (("carbohydrate", 50, 65, 4),
+                                               ("protein", 10, 20, 4), ("fat", 15, 30, 9))
+        },
+        "macro_reference_version": "2025 한국인 영양소 섭취기준 / 일반 성인 에너지 적정비율",
         "basis": "체성분 정보 추가 등록" if profile.body else "기본 정보 기반 추정",
         "body_used_in_energy_equation": False,
         "energy_formula": {"version": "NASEM DRI Energy 2023 / Health Canada 공개표",
                            "coefficients": [a, b, c, d],
                            "expression": "상수 + 나이계수×나이 + 키계수×키(cm) + 체중계수×체중(kg)"},
         "limitations": ["유지 에너지 추정값이며 감량·증량 열량 처방이 아닙니다.",
-                       "한국인 영양소 섭취기준으로 검증한 개인 목표가 아닙니다.",
+                       "유지 에너지 공식은 북미 DRI 2023이며 한국인 개인 목표로 검증한 값은 아닙니다.",
                        "BMI는 체지방·근육·건강 상태의 단독 판정 기준이 아닙니다.",
                        "인바디는 변화 기록에 활용하며 이번 에너지 공식에는 사용하지 않습니다.",
                        "단백질은 일반 성인 참고값이며 운동선수·질환 치료 목표가 아닙니다."],
-        "sources": [{"title": "유지 에너지: DRI 2023", "url": ENERGY_SOURCE},
+        "sources": [{"title": "2025 한국인 기준: 에너지 적정비율", "url": KDRI_SOURCE},
+                    {"title": "유지 에너지: DRI 2023", "url": ENERGY_SOURCE},
                     {"title": "일반 성인 단백질 참고", "url": PROTEIN_SOURCE},
                     {"title": "WHO 식생활 기준", "url": DIET_SOURCE},
                     {"title": "WHO 2020 신체활동 지침", "url": ACTIVITY_SOURCE}],

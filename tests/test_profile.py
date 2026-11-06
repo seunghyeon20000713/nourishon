@@ -35,3 +35,19 @@ class ProfileTests(unittest.TestCase):
                        dict(body={'measured_on':'2020-01-01','fat_mass_kg':50,'skeletal_muscle_kg':40})]:
             with self.subTest(change=change), self.assertRaises(ValidationError):
                 self.profile(**change)
+
+    def test_kdri_macro_ranges_and_version(self):
+        result = estimate_profile(self.profile())
+        # 반올림 전 EER 2520.17kcal를 4/4/9kcal/g으로 환산한다.
+        ranges = result['macro_reference_ranges']
+        self.assertEqual(ranges['carbohydrate'], {'percent':[50,65], 'min_g':315.0, 'max_g':409.5})
+        self.assertEqual(ranges['protein'], {'percent':[10,20], 'min_g':63.0, 'max_g':126.0})
+        self.assertEqual(ranges['fat'], {'percent':[15,30], 'min_g':42.0, 'max_g':84.0})
+        self.assertIn('2025', result['macro_reference_version'])
+
+    def test_measurement_dates(self):
+        for change in [dict(measured_on='2999-01-01'),
+                       dict(measured_on='2020-01-01', body={'measured_on':'2020-01-02','fat_mass_kg':20})]:
+            with self.subTest(change=change), self.assertRaises(ValidationError):
+                self.profile(**change)
+        self.assertEqual(self.profile(measured_on='2020-01-01').measured_on.isoformat(),'2020-01-01')

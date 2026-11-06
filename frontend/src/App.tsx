@@ -1,5 +1,7 @@
-import { Profile, History, Insights, emptyData, today, storageKey } from './Wellness'
-import type { WellnessData, Calculation } from './Wellness'
+import { Profile, History, Insights, today } from './Wellness'
+import { useLocalProfiles } from './localProfiles'
+import { Dashboard } from './Dashboard'
+import type { Calculation } from './Wellness'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight,
@@ -32,13 +34,11 @@ function BowlArt() {
 
 export default function App() {
   const [view,setView] = useState('meal')
-  const [data,setData] = useState<WellnessData>(() => { try { const raw=localStorage.getItem(storageKey); if(raw){ const parsed=JSON.parse(raw); if(Array.isArray(parsed.records))return parsed } } catch {} return emptyData() })
-  const [persist,setPersist] = useState(() => {try{return !!localStorage.getItem(storageKey)}catch{return false}})
-  const [storageError,setStorageError] = useState('')
+  const {data,setData,profiles,activeId,register,select,persist,setPersist,storageError} = useLocalProfiles()
+  const [nickname,setNickname] = useState('')
   const [mealDate,setMealDate] = useState(today())
   const [mealKind,setMealKind] = useState('아침')
   const [saved,setSaved] = useState(false)
-  useEffect(()=>{try{if(persist)localStorage.setItem(storageKey,JSON.stringify(data));else localStorage.removeItem(storageKey);setStorageError('')}catch{setStorageError('브라우저 보관에 실패했습니다. 현재 실행 중인 기록만 유지됩니다.')}},[data,persist])
   const [health, setHealth] = useState<{ status: 'loading' | 'ok' | 'error'; count?: number }>({ status: 'loading' })
   const [connectionAttempt, setConnectionAttempt] = useState(0)
   const [query, setQuery] = useState('')
@@ -62,6 +62,12 @@ export default function App() {
       .catch(() => { if (!controller.signal.aborted) setHealth({ status: 'error' }) })
     return () => controller.abort()
   }, [connectionAttempt])
+
+  useEffect(() => {
+    searchController.current?.abort(); calculationController.current?.abort()
+    setEntries([]); setCalculation(null); setResults(null); setQuery('');setSearching(false)
+    setCalculating(false);setSaved(false);setCalculationError('');setSearchError('')
+  }, [activeId])
 
   useEffect(() => () => { searchController.current?.abort(); calculationController.current?.abort() }, [])
 
@@ -140,11 +146,12 @@ export default function App() {
 
     <main id="main">
       <header className="topbar"><div>나의 공간 <ChevronRight size={14} /> <strong>{{meal:"식사 분석",profile:"내 몸과 목표",history:"기록과 분석",insights:"생활 개선"}[view]}</strong></div><span>{date}</span></header>
-      <div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>기본은 실행 중에만 유지됩니다. 보관을 선택하면 암호화되지 않은 브라우저 저장소에 남으므로 공용 기기에서는 사용하지 마세요. 서버·GitHub에는 저장하지 않습니다.</p>{storageError&&<p role="alert">{storageError}</p>}</div>
-      {view==='profile'&&<Profile data={data} onChange={setData}/>}
-      {view==='history'&&<History data={data} onChange={setData}/>}
+      <section className="profile-switcher" aria-label="로컬 사용자 프로필 관리"><label>사용 중인 프로필<select aria-label="사용 중인 프로필" value={activeId} onChange={e=>select(e.target.value)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.nickname}</option>)}</select></label><form onSubmit={e=>{e.preventDefault();register(nickname);setNickname('')}}><label className="sr-only" htmlFor="nickname">새 프로필 별칭</label><input id="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="새 프로필 별칭" maxLength={20} required/><button type="submit">프로필 등록</button></form><small>로컬 테스트용 프로필 구분 · 로그인이나 접근 제한 기능이 아닙니다.</small></section>
+      <div className="storage-panel"><label><input type="checkbox" checked={persist} onChange={e=>setPersist(e.target.checked)}/> 이 브라우저에 프로필·식사 기록 보관</label><p>기본은 실행 중에만 유지됩니다. 보관을 선택하면 등록한 모든 로컬 프로필과 기록이 암호화되지 않은 브라우저 저장소에 남으므로 공용 기기에서는 사용하지 마세요. 서버·GitHub에는 저장하지 않습니다.</p>{storageError&&<p role="alert">{storageError}</p>}</div>
+      {view==='profile'&&<Profile key={activeId} data={data} onChange={setData}/>}
+      {view==='history'&&<History key={activeId} data={data} onChange={setData}/>}
       {view==='insights'&&<Insights data={data}/>}
-      {view==='meal'&&<><section className="hero" aria-labelledby="page-title">
+      {view==='meal'&&<><Dashboard data={data} onView={setView} onMeal={kind=>{setMealKind(kind);setMealDate(today());setSaved(false)}}/><section className="hero" aria-labelledby="page-title">
         <div><div className="eyebrow"><Leaf size={15} /> EVERY MEAL, A LITTLE BETTER</div>
           <h1 id="page-title">오늘의 식사,<br className="mobile-break" /> 가볍게 돌아봐요.</h1>
           <p>먹은 음식과 양을 더하고, 한 끼에 담긴 영양을 살펴보세요.</p>
