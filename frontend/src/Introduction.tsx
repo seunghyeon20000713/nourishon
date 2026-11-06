@@ -31,7 +31,7 @@ export default function Introduction() {
   return <>
     <div ref={root} className="intro-page" hidden={!intro}>
       <a className="intro-skip" href="#intro-process">서비스 소개로 건너뛰기</a>
-      <header className="intro-header"><a className="intro-brand" href="#dashboard" aria-label="NourishOn 대시보드로 이동"><img src="/brand/nourishon-mark.png" alt=""/>NourishOn</a><a className="intro-start" href="#dashboard">관리 시작하기 <ArrowUpRight size={17}/></a></header>
+      <header className="intro-header"><div className="intro-brand"><a href="#intro" aria-label="N 로고 소개 화면으로 이동"><img src="/brand/nourishon-mark.png" alt=""/></a><a href="#dashboard" aria-label="NourishOn 대시보드로 이동">NourishOn</a></div><a className="intro-start" href="#dashboard">관리 시작하기 <ArrowUpRight size={17}/></a></header>
       <main>
         <section className="intro-hero" aria-labelledby="intro-title">
           <div className="intro-hero-copy"><p className="intro-kicker">NUTRITION, WITH CONTEXT</p><h1 id="intro-title" tabIndex={-1}>내 몸을 이해하고,<br/>다음 한 끼를<br/><em>더 나답게.</em></h1><p className="intro-lead">숫자를 모으는 데서 한 걸음 더.<br/>몸의 변화와 식사 기록을 함께 살펴보세요.</p><a className="intro-primary" href="#dashboard">내 식사 관리 시작하기 <ArrowUpRight size={20}/></a><p className="intro-local">현재는 로컬 개발용 서비스입니다.</p></div>

@@ -36,6 +36,11 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
   const [menuOpen,setMenuOpen] = useState(false)
   const menuToggle = useRef<HTMLButtonElement>(null)
   useEffect(()=>{
+    const home=()=>{if(window.location.hash==='#dashboard'){setView('dashboard');setMenuOpen(false)}}
+    window.addEventListener('hashchange',home)
+    return()=>window.removeEventListener('hashchange',home)
+  },[])
+  useEffect(()=>{
     const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'&&menuOpen){setMenuOpen(false);menuToggle.current?.focus()}}
     document.addEventListener('keydown',escape)
     return()=>document.removeEventListener('keydown',escape)
@@ -150,7 +155,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
     </aside>
     <nav className="mobile-bottom-nav" aria-label="빠른 메뉴">{([['dashboard','오늘','영양 대시보드',ChartColumn],['meal','식사','식사 분석',Utensils],['history','기록','기록과 분석',CalendarDays],['exercise','운동','운동 계획',Activity]] as const).map(([key,label,accessible,Icon])=><button key={key} aria-label={accessible} aria-current={view===key?'page':undefined} onClick={()=>{setView(key);setMenuOpen(false);window.scrollTo(0,0)}}><Icon size={20}/><span>{label}</span></button>)}</nav>
     <main id="main">
-      <header className="journal-topbar"><button className="journal-wordmark" aria-label="NourishOn 소개 화면으로 이동" onClick={()=>{setMenuOpen(false);window.location.hash='intro'}}>NourishOn</button><div className="journal-product">영양 분석 저널 <span>Nutrition Analysis Journal</span></div><button className="record-primary" onClick={()=>setView('meal')}><Plus size={18}/> 식사 기록</button>
+      <header className="journal-topbar"><button className="journal-wordmark" aria-label="NourishOn 메인 화면으로 이동" onClick={()=>{setMenuOpen(false);setView('dashboard');window.scrollTo(0,0)}}>NourishOn</button><div className="journal-product">영양 분석 저널 <span>Nutrition Analysis Journal</span></div><button className="record-primary" onClick={()=>setView('meal')}><Plus size={18}/> 식사 기록</button>
       <button className="menu-toggle top-menu-toggle" aria-label="상단 메뉴 펼치기" aria-expanded={menuOpen} aria-controls="workspace-navigation" onClick={()=>setMenuOpen(open=>!open)}>{menuOpen?<X size={22}/>:<Menu size={22}/>}</button>
       <details className="profile-tools"><summary><UserRound size={18}/><span>내 정보</span><ChevronDown size={14}/></summary><div className="profile-popup"><div className="personal-profile-intro"><strong>내 정보와 기록 설정</strong><p>신체 정보·인바디·목표를 한곳에서 관리하세요.</p><button className="personal-profile-link" onClick={()=>{setView('profile');const panel=document.querySelector('details.profile-tools') as HTMLDetailsElement|null;if(panel)panel.open=false}}>내 정보 수정 <ArrowUpRight size={16}/></button>{profiles.length>1&&<small>현재 기록: {profiles.find(p=>p.id===activeId)?.nickname}</small>}</div><details className="advanced-profiles"><summary>프로필 전환·추가</summary>
        <section className="profile-switcher" aria-label="사용자 프로필 관리"><label>사용 중인 프로필<select aria-label="사용 중인 프로필" value={activeId} onChange={e=>select(e.target.value)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.nickname}</option>)}</select></label><form onSubmit={async e=>{e.preventDefault();await register(nickname);setNickname('')}}><label className="sr-only" htmlFor="nickname">새 프로필 별칭</label><input id="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="새 프로필 별칭" maxLength={20} required/><button type="submit">프로필 등록</button></form><small>{session.user?'이 계정에 속한 프로필·측정·식사 기록을 구분합니다.':'로컬 프로필은 로그인이나 접근 제한 기능이 아닙니다.'}</small></section></details>
