@@ -26,6 +26,15 @@ class ApiTests(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None, None, None)
 
+    def test_weekly_guidance_privacy_and_no_records(self):
+        response = self.client.post('/nutrition/weekly-guidance', json={'end':'2026-01-07'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['cache-control'], 'no-store')
+        self.assertEqual(response.json()['activity']['plan_status'], 'needs_input')
+        invalid = self.client.post('/nutrition/weekly-guidance', json={'private_note':'weekly-private-marker'})
+        self.assertEqual(invalid.status_code, 422)
+        self.assertNotIn('weekly-private-marker', invalid.text)
+
     def test_activity_api_and_cache(self):
         from uuid import uuid4
         self.assertEqual(len(self.client.get('/activities').json()['items']), 25)

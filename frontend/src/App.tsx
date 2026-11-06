@@ -168,7 +168,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
       {view==='exercise'&&<Exercise key={activeId} data={data} onChange={setData} session={session} profileId={activeId}/>}
       {view==='profile'&&<Profile key={activeId} data={data} onChange={setData}/>}
       {view==='history'&&<History key={`${activeId}-${historyDay}`} initialDay={historyDay} data={data} onChange={setData}/>}
-      {view==='insights'&&<Insights data={data}/>}
+      {view==='insights'&&<Insights data={data} onView={setView}/>}
       {view==='meal'&&<><section className="hero" aria-labelledby="page-title">
         <div><div className="eyebrow">FOOD DIARY</div>
           <h1 id="page-title">식사 기록과 영양 계산</h1>

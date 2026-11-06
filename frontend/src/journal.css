@@ -1497,3 +1497,12 @@ main {
  .daily-actions button { font-size: 10px; gap: 3px; margin-top: 10px; }
  .daily-actions button svg { width: 12px; height: 12px; }
 }
+.weekly-guidance { margin: 24px 0 32px; padding-bottom: 24px; border-bottom: 1px solid #dce6dc; }
+.guidance-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 20px 0; }
+.guidance-actions article { padding: 20px; border: 1px solid #dce6dc; border-radius: 10px; background: #f7faf4; }
+.guidance-actions h3 { margin: 0 0 12px; font-size: 16px; }
+.guidance-actions p { font-size: 13px; line-height: 1.9; }
+.weekly-guidance summary { cursor: pointer; font-size: 12px; color: #19573f; }
+.weekly-guidance>details { margin: 16px 0; }
+@media(max-width:700px) { .guidance-actions { grid-template-columns: 1fr; } }
+.guidance-actions button { border: 1px solid #b9cdbb; background: white; color: #19573f; border-radius: 6px; padding: 9px 12px; font-size: 12px; margin: 0 0 16px; }

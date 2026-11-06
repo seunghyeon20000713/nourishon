@@ -18,6 +18,7 @@ from backend.food_search import _normalize_name
 from backend.meal import calculate_meal
 from backend.profile import ProfileInput, estimate_profile
 from backend.nutrition_review import ReviewInput, review_nutrition
+from backend.weekly_guidance import WeeklyInput, weekly_guidance
 
 
 DEFAULT_DATA = (Path(__file__).resolve().parents[1] / "data/processed"
@@ -186,6 +187,13 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
             return estimate_profile(payload)
         except ValueError:
             raise HTTPException(422, "프로필 값과 적용 범위를 확인하세요.") from None
+
+    @app.post("/nutrition/weekly-guidance", summary="최근 7일 식사·신체·운동 연결 안내")
+    def combined_guidance(payload: WeeklyInput):
+        try:
+            return weekly_guidance(payload)
+        except (ValueError, OverflowError):
+            raise HTTPException(422, "기록 범위와 입력 조건을 확인하세요.") from None
 
     @app.post("/nutrition/review", summary="기록된 식사 스냅샷의 영양 구성과 다음 식사 안내")
     def nutrition_review(payload: ReviewInput):
