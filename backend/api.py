@@ -7,7 +7,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Query
 import psycopg
-from backend.accounts import router as account_router
+from backend.accounts import router as account_router, Measurement
 from backend.database import database_url as read_database_url
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -121,7 +121,7 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
 
     @app.middleware("http")
     async def private_response(request, call_next):
-        private = request.url.path.startswith(("/auth/", "/account/", "/nutrition/"))
+        private = request.url.path.startswith(("/auth/", "/account/", "/nutrition/", "/measurements/"))
         if private and request.method in {"POST", "PUT", "PATCH"}:
             chunks, size = [], 0
             async for chunk in request.stream():
@@ -166,6 +166,10 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
             raise HTTPException(404, "해당 식품코드가 없습니다.") from None
         except (ValueError, TypeError, OverflowError):
             raise HTTPException(422, "계산할 수 없는 입력입니다.") from None
+
+    @app.post("/measurements/validate", summary="신체 측정 기록 입력 확인")
+    def validate_measurement(payload: Measurement):
+        return payload.model_dump(mode="json", exclude_none=True)
 
     @app.post("/profile/estimate", summary="일반 성인 프로필의 BMI·추정 유지 에너지·참고 기준")
     def profile(payload: ProfileInput):

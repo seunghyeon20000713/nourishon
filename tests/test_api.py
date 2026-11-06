@@ -26,6 +26,22 @@ class ApiTests(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None, None, None)
 
+    def test_measurement_validation(self):
+        from uuid import uuid4
+        from datetime import date, timedelta
+        value = dict(id=str(uuid4()), measured_on=date.today().isoformat(), weight_kg=70, fat_mass_kg=0)
+        response = self.client.post('/measurements/validate', json=value)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['fat_mass_kg'], 0)
+        self.assertNotIn('skeletal_muscle_kg', response.json())
+        self.assertEqual(response.headers['cache-control'], 'no-store')
+        for invalid in [dict(weight_kg=-1), dict(skeletal_muscle_kg=60, fat_mass_kg=20),
+                        dict(body_fat_percent=101), dict(measured_on=(date.today()+timedelta(days=2)).isoformat()),
+                        dict(private_note='private-measurement-marker')]:
+            result = self.client.post('/measurements/validate', json=value | invalid)
+            self.assertEqual(result.status_code, 422)
+            self.assertNotIn('private-measurement-marker', result.text)
+
     def test_profile_endpoint_and_private_validation(self):
         payload = dict(age=30, height_cm=170, weight_kg=70, equation_sex='female',
                        activity='inactive', scope_confirmed=True)
