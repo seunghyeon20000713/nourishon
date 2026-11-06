@@ -6,10 +6,11 @@ import path from 'node:path'
 
 test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리', async ({page}) => {
  const names:string[]=[]
- const password=randomBytes(24).toString('base64url')
+ const password=randomBytes(2).toString('hex')
  async function signup(){await openAccount(page);const name=`e2e_${randomBytes(8).toString('hex')}`;names.push(name)
   await page.getByRole('button',{name:'회원가입으로 전환',exact:true}).click()
   await page.getByLabel('아이디',{exact:true}).fill(name)
+  await expect(page.getByLabel('비밀번호',{exact:true})).toHaveAttribute('minlength','4')
   await page.getByLabel('비밀번호',{exact:true}).fill(password)
   await page.getByRole('button',{name:'가입하고 시작',exact:true}).click()
   await expect(page.locator('#account-tools > summary')).toContainText(name)
@@ -60,6 +61,7 @@ test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리',
   await openAccount(page)
   await page.getByRole('button',{name:'로그아웃',exact:true}).click()
   await page.getByLabel('아이디',{exact:true}).fill(a)
+  await expect(page.getByLabel('비밀번호',{exact:true})).toHaveAttribute('minlength','4')
   await page.getByLabel('비밀번호',{exact:true}).fill(password)
   await page.getByRole('button',{name:'로그인',exact:true}).click()
   await expect(page.locator('#account-tools > summary')).toContainText(a)

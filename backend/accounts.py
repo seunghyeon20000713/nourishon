@@ -36,9 +36,13 @@ class Credentials(BaseModel):
 
     @model_validator(mode='after')
     def length(self):
-        if not 15 <= len(self.password.get_secret_value()) <= 128:
-            raise ValueError('비밀번호는 15~128자입니다.')
+        if not 4 <= len(self.password.get_secret_value()) <= 128:
+            raise ValueError('비밀번호는 4~128자입니다.')
         return self
+
+
+class Registration(Credentials):
+    username: Annotated[str, StringConstraints(to_lower=True, strip_whitespace=True, pattern=r'^[a-z0-9_]{4,40}$')]
 
 
 class NewProfile(BaseModel):
@@ -177,7 +181,7 @@ def me(request: Request):
 
 
 @router.post('/auth/register', status_code=201)
-def register(payload: Credentials, request: Request, response: Response):
+def register(payload: Registration, request: Request, response: Response):
     mutation_guard(request)
     throttle(request, payload.username)
     password_hash = HASHER.hash(payload.password.get_secret_value())

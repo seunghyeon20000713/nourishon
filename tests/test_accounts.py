@@ -8,7 +8,7 @@ from datetime import date
 from fastapi.testclient import TestClient
 from psycopg.conninfo import conninfo_to_dict
 from backend.api import create_app
-from backend.accounts import HASHER, Credentials
+from backend.accounts import HASHER, Credentials, Registration
 from backend.database import connect
 from tests.test_api import practice_row
 
@@ -35,6 +35,27 @@ class AccountTests(unittest.TestCase):
         r=client.post('/auth/register',json={'username':name,'password':password},headers=HEADERS)
         self.assertEqual(r.status_code,201)
         return r.json(),password
+    def test_four_character_signup_and_login(self):
+        # 별도 테스트 DB의 사용하지 않는 4자 가상 아이디만 생성한다.
+        with connect(TEST_DSN) as conn:
+            while True:
+                name = secrets.token_hex(2)
+                if not conn.execute('SELECT 1 FROM users WHERE username=%s', (name,)).fetchone():
+                    break
+        self.names.append(name)
+        password = secrets.token_hex(2)
+        for username, secret in [(name[:3], password), (name, password[:3])]:
+            response = self.client.post('/auth/register', json={'username':username,'password':secret}, headers=HEADERS)
+            self.assertEqual(response.status_code, 422)
+        response = self.client.post('/auth/register', json={'username':name,'password':password}, headers=HEADERS)
+        self.assertEqual(response.status_code, 201)
+        user = response.json()
+        self.assertEqual(self.client.post('/auth/register', json={'username':name,'password':password}, headers=HEADERS).status_code, 409)
+        self.assertEqual(self.client.post('/auth/logout', headers=self.headers(user)).status_code, 200)
+        response = self.client.post('/auth/login', json={'username':name,'password':password}, headers=HEADERS)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['user']['username'], name)
+
     def headers(self,user):return HEADERS|{'X-CSRF-Token':user['csrf_token']}
     def profile_id(self,client=None):return (client or self.client).get('/account/profiles').json()['profiles'][0]['id']
     def data(self):
@@ -136,6 +157,16 @@ class AccountTests(unittest.TestCase):
 
 
 class CredentialInputTests(unittest.TestCase):
+    def test_registration_length_boundaries(self):
+        from pydantic import ValidationError
+        for name, password in [('abc', 'abcd'), ('abcd', 'abc'), ('a'*41, 'abcd'), ('abcd', 'a'*129)]:
+            with self.subTest(username_length=len(name), password_length=len(password)):
+                with self.assertRaises(ValidationError):
+                    Registration(username=name, password=password)
+        for name, password in [('ABCD', 'abcd'), ('a'*40, 'a'*128)]:
+            self.assertEqual(Registration(username=name, password=password).username, name.lower())
+        self.assertEqual(Credentials(username='abc', password='abcd').username, 'abc')
+
     def test_normalize_login_name(self):
         value=Credentials(username=' Practice_User ',password=secrets.token_urlsafe(24))
         self.assertEqual(value.username,'practice_user')
