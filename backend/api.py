@@ -3,7 +3,7 @@
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import FastAPI, HTTPException, Query
 import psycopg
@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from backend.food_search import _normalize_name
+from backend.food_comparison import compare_foods
 from backend.meal import calculate_meal
 from backend.profile import ProfileInput, estimate_profile
 from backend.nutrition_review import ReviewInput, review_nutrition
@@ -159,6 +160,16 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
             return app.state.catalog.search(q, offset, limit)
         except ValueError:
             raise HTTPException(422, "검색어를 입력해주세요.") from None
+
+    @app.get("/foods/compare", summary="검색 결과의 100g당 영양성분 비교")
+    def food_comparison(q: Annotated[str, Query(min_length=1, max_length=100)],
+                        focus: Literal['protein', 'fiber', 'sodium'] = 'protein',
+                        offset: Annotated[int, Query(ge=0, le=10000)] = 0,
+                        limit: Annotated[int, Query(ge=1, le=20)] = 8):
+        try:
+            return compare_foods(app.state.catalog.rows, app.state.catalog.names, q, focus, offset, limit)
+        except (ValueError, TypeError, OverflowError):
+            raise HTTPException(422, "검색어와 식품 정보를 확인하세요.") from None
 
     @app.post("/meals/calculate", summary="음식별 섭취량으로 한 끼 영양 합계 계산")
     def meal(payload: MealRequest):

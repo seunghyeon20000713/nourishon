@@ -111,9 +111,9 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
   }
 
   function addFood(food: Food) {
-    if (entries.some(e => e.food.food_code === food.food_code)) return
-    if (entries.length >= 100) { setCalculationError('한 번에 100개 음식까지 담을 수 있어요.'); return }
-    changeEntries([...entries, { food, grams: '100' }])
+    if (entries.some(e => e.food.food_code === food.food_code)) return false
+    if (entries.length >= 100) { setCalculationError('한 번에 100개 음식까지 담을 수 있어요.'); return false }
+    changeEntries([...entries, { food, grams: '100' }]); return true
   }
 
   async function calculate() {
@@ -168,7 +168,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
       {view==='exercise'&&<Exercise key={activeId} data={data} onChange={setData} session={session} profileId={activeId}/>}
       {view==='profile'&&<Profile key={activeId} data={data} onChange={setData}/>}
       {view==='history'&&<History key={`${activeId}-${historyDay}`} initialDay={historyDay} data={data} onChange={setData}/>}
-      {view==='insights'&&<Insights data={data} onView={setView}/>}
+      {view==='insights'&&<Insights key={activeId} data={data} onView={setView} onAddFood={food=>{addFood(food);setView('meal');window.scrollTo(0,0)}}/>}
       {view==='meal'&&<><section className="hero" aria-labelledby="page-title">
         <div><div className="eyebrow">FOOD DIARY</div>
           <h1 id="page-title">식사 기록과 영양 계산</h1>

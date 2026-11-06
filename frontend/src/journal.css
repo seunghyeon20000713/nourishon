@@ -1506,3 +1506,21 @@ main {
 .weekly-guidance>details { margin: 16px 0; }
 @media(max-width:700px) { .guidance-actions { grid-template-columns: 1fr; } }
 .guidance-actions button { border: 1px solid #b9cdbb; background: white; color: #19573f; border-radius: 6px; padding: 9px 12px; font-size: 12px; margin: 0 0 16px; }
+.food-comparison { border: 1px solid #dce6dc; border-radius: 12px; padding: 22px; margin: 28px 0; background: #fbfcf8; }
+.food-comparison form { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.food-comparison label { flex: 1; min-width: 160px; }
+.food-comparison input,.food-comparison select { width: 100%; }
+.food-comparison button { border: 1px solid #b9cdbb; background: white; color: #19573f; border-radius: 6px; padding: 10px 12px; font-size: 12px; }
+.food-comparison form>button { margin: 0 0 10px; background: #19573f; color: white; }
+.comparison-limit { font-size: 12px; color: #647366; }
+.comparison-table { overflow-x: auto; max-width: 100%; }
+.comparison-table table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.comparison-table td,.comparison-table th { text-align: left; padding: 12px; border-bottom: 1px solid #dce6dc; }
+.comparison-table th[scope=row] { min-width: 200px; max-width: 320px; overflow-wrap: anywhere; }
+.comparison-table small { display: block; color: #647366; font-size: 10px; font-weight: 400; }
+.comparison-table td { white-space: nowrap; }
+.comparison-pages { display: flex; gap: 14px; align-items: center; justify-content: center; margin-top: 18px; font-size: 12px; }
+.guidance-actions button+button { margin-left: 8px; }
+@media(max-width:700px) { .food-comparison { padding: 16px; } .food-comparison label { min-width: 0; flex-basis: 100%; } }
+.comparison-scroll-hint { display: none; }
+@media(max-width:700px) { .comparison-scroll-hint { display: block; font-size: 11px; color: #647366; } }

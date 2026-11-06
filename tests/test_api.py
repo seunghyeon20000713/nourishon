@@ -26,6 +26,25 @@ class ApiTests(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None, None, None)
 
+    def test_food_comparison_sorted_missing_and_pagination(self):
+        rows = [practice_row('a','연습용 비교'), practice_row('b','연습용 비교'), practice_row('c','연습용 비교')]
+        for row, sodium, protein, fiber in zip(rows, [500,0,None], [10,20,None], [None,0,5]):
+            row.update(NAT=sodium,PROT=protein,FIBTG=fiber)
+        with TestClient(create_app(rows=rows)) as client:
+            result = client.get('/foods/compare', params={'q':'연습용','focus':'sodium'}).json()
+            self.assertEqual([r['food_code'] for r in result['items']], ['b','a','c'])
+            self.assertEqual(result['items'][0]['nutrients']['sodium']['per_100g'], 0)
+            self.assertEqual(result['items'][2]['nutrients']['sodium']['per_100g'], None)
+            self.assertEqual(result['items'][0]['nutrients']['sodium']['unit'], 'mg')
+            self.assertEqual(result['items'][0]['basis'], '100g')
+            result = client.get('/foods/compare', params={'q':'연습용','focus':'fiber','offset':1,'limit':1}).json()
+            self.assertEqual(result['total'],3)
+            self.assertEqual(result['items'][0]['food_code'],'b')
+            self.assertEqual(result['items'][0]['source_row_number'],2)
+            self.assertEqual(client.get('/foods/compare',params={'q':'없음'}).json()['total'],0)
+            self.assertEqual(client.get('/foods/compare',params={'q':'연습용','focus':'sugar'}).status_code,422)
+            self.assertEqual(client.get('/foods/compare',params={'q':'   '}).status_code,422)
+
     def test_weekly_guidance_privacy_and_no_records(self):
         response = self.client.post('/nutrition/weekly-guidance', json={'end':'2026-01-07'})
         self.assertEqual(response.status_code, 200)
