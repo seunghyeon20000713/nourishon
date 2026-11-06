@@ -92,3 +92,40 @@ body,.app-shell { background: var(--bg); }
  .body-recent thead th { font-size: 12px; }
  .body-recent th,.body-recent td { padding-block: 8px; }
 }
+/* 본문 바깥 여백과 흰 패널 안쪽 여백을 구분해 화면 가장자리에 글자가 붙지 않게 한다. */
+.app-shell .page-content { width: 100%; max-width: 1540px; margin-inline: auto; padding-inline: clamp(24px,3.6vw,64px); }
+.app-shell .wellness-panel { padding: clamp(24px,3vw,44px); }
+.personal-profile-page .profile-page-heading { padding-bottom: 25px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+.profile-kicker { color: #64745d; letter-spacing: 1.5px; font-size: 11px; font-weight: 650; }
+.personal-profile-page .profile-page-heading h1 { margin: 8px 0 10px; }
+.personal-profile-page .profile-page-heading p { margin: 0; color: #657060; font-size: 14px; }
+.organized-profile-form { display: block; max-width: 1040px; }
+.organized-profile-form .profile-input-section { min-width: 0; border: 0; padding: 0 0 30px; margin: 0 0 30px; border-bottom: 1px solid var(--border); }
+.organized-profile-form .profile-input-section legend { padding: 0; font-size: 20px; font-weight: 650; color: #244d36; }
+.organized-profile-form .profile-section-help { margin: 8px 0 22px; color: #697166; font-size: 13px; }
+.profile-field-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; }
+.profile-field-grid.two-columns { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.organized-profile-form .profile-field-grid label { display: flex; flex-direction: column; gap: 9px; font-size: 14px; font-weight: 550; min-width: 0; }
+.organized-profile-form input:not([type=checkbox]),.organized-profile-form select { max-width: none; width: 100%; height: 50px; padding: 10px 14px; background: #fff; border: 1px solid #bfcaba; border-radius: 6px; font-size: 16px; color: #253c2b; }
+.organized-profile-form label small { color: #6b7468; font-size: 12px; font-weight: 400; }
+.personal-profile-page .profile-input-note { padding: 14px 16px; margin: 22px 0 0; background: #f5f6ef; color: #64705d; font-size: 12px; line-height: 1.8; border-radius: 5px; }
+.optional-body-heading { margin: 28px 0 20px; }
+.personal-profile-page .optional-body-heading h2 { font-size: 16px; margin: 0; }
+.optional-body-heading h2 span { color: #75806e; font-size: 12px; margin-left: 8px; font-weight: 400; }
+.personal-profile-page .optional-body-heading p { font-size: 13px; color: #697166; margin: 6px 0 0; }
+.profile-submit-area { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.profile-submit-area>p { margin: 0; font-size: 13px; }
+.organized-profile-form .profile-scope { display: flex; align-items: flex-start; gap: 11px; font-size: 13px; line-height: 1.8; max-width: 720px; }
+.profile-scope input { flex: none; width: 18px; height: 18px; margin-top: 3px; accent-color: #19573f; }
+.profile-submit-area .calculate-button { width: auto; max-width: 100%; padding: 14px 24px; font-size: 14px; border-radius: 6px; }
+.profile-submit-area>small { color: #697166; font-size: 12px; }
+.personal-profile-page .estimate { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 28px; }
+@media(max-width:1000px) { .profile-field-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:700px) {
+ .app-shell .page-content { padding-inline: 16px; }
+ .app-shell .wellness-panel { padding: 22px 18px; }
+ .profile-field-grid,.profile-field-grid.two-columns { grid-template-columns: 1fr; gap: 20px; }
+ .organized-profile-form .profile-input-section { margin-bottom: 24px; padding-bottom: 24px; }
+ .organized-profile-form .profile-input-section legend { font-size: 18px; }
+ .profile-submit-area .calculate-button { width: 100%; }
+}
