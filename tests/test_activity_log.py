@@ -18,6 +18,17 @@ class ActivityLogTests(unittest.TestCase):
         self.assertIn('2024', result['calculation']['version'])
         self.assertEqual(calculate_activity(self.record(activity_code='01214'))['calculation']['gross_kcal'], 140)
 
+    def test_new_activity_reference_values(self):
+        # 70kg·30분: 공식 MET × 35. 기존 코드와 추가 코드의 계산 검증.
+        for code, met, expected in [('12020',7.5,262.5),('12028',6.5,227.5),
+                                    ('12030',8.5,297.5),('12050',9.3,325.5),
+                                    ('02056',3.0,105),('02054',3.5,122.5),
+                                    ('02050',6.0,210),('15660',4.0,140)]:
+            with self.subTest(code=code):
+                value = calculate_activity(self.record(activity_code=code))['calculation']
+                self.assertEqual(value['met'], met)
+                self.assertEqual(value['gross_kcal'], expected)
+
     def test_zero_and_boundaries(self):
         result = calculate_activity(self.record(minutes=0))
         self.assertEqual(result['calculation']['gross_kcal'], 0)

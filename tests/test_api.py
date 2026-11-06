@@ -28,7 +28,7 @@ class ApiTests(unittest.TestCase):
 
     def test_activity_api_and_cache(self):
         from uuid import uuid4
-        self.assertEqual(len(self.client.get('/activities').json()['items']), 5)
+        self.assertEqual(len(self.client.get('/activities').json()['items']), 25)
         value = dict(id=str(uuid4()), date='2020-01-01', age=30, activity_code='17152', weight_kg=70, minutes=30)
         response = self.client.post('/activities/calculate', json=value)
         self.assertEqual(response.status_code, 200)

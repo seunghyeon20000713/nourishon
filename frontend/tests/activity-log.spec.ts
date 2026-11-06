@@ -37,3 +37,25 @@ test('MET 계산·입력 변경·0분·기록 보관·삭제와 모바일', asyn
   await page.getByRole('button', { name: '운동 기록 삭제', exact: true }).first().click()
   await expect(page.locator('.activity-record')).toHaveCount(1)
 })
+
+test('러닝·근력 분류 선택과 종목별 계산·기록', async ({ page }) => {
+  await page.goto('/#dashboard')
+  await page.getByRole('button', { name: '운동 계획', exact: true }).click()
+  const form = page.getByRole('form', { name: '실제 운동 계산' })
+  await form.getByLabel('운동 당시 나이 (세)', { exact: true }).fill('30')
+  await form.getByLabel('운동 당시 체중 (kg)', { exact: true }).fill('70')
+  const select = form.getByLabel('수행한 운동', { exact: true })
+  await expect(select.locator('option')).toHaveCount(25)
+  await expect(select.locator('optgroup[label="러닝"] option')).toHaveCount(4)
+  await expect(select.locator('optgroup[label="근력·맨몸"] option')).toHaveCount(6)
+  for (const [code, kcal] of [['12030', '297.5'], ['02056', '105'], ['02054', '122.5']]) {
+    await select.selectOption(code)
+    await form.getByRole('button', { name: '운동 소모량 계산' }).click()
+    await expect(page.locator('.activity-estimate')).toContainText(`${kcal} kcal`)
+    await page.getByRole('button', { name: '운동 기록에 추가', exact: true }).click()
+    await expect(page.locator('.activity-record').last()).toContainText(code)
+  }
+  await expect(page.locator('.activity-record')).toHaveCount(3)
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})

@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import type { WellnessData } from './Wellness'
 import { today } from './Wellness'
 export type ActivityRecord = { id: string; date: string; age: number; activity_code: string; weight_kg: number; minutes: number; calculation: { name: string; met: number; gross_kcal: number; above_rest_kcal: number; formula: string; version: string; checked_on: string; source_url: string; scope: string } }
-type Activity = { code: string; name: string; met: number; url: string }
+type Activity = { category: string; code: string; name: string; met: number; url: string }
 export function ActivityLog({ data, onChange }: { data: WellnessData; onChange: (data: WellnessData) => void }) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [error, setError] = useState(''), [busy, setBusy] = useState(false)
@@ -38,11 +38,13 @@ export function ActivityLog({ data, onChange }: { data: WellnessData; onChange: 
   }
   return <section className="activity-log" aria-labelledby="activity-log-title"><h2 id="activity-log-title">실제 운동 기록과 소모량 추정</h2>
     <p>2024 Adult Compendium의 <b>19~59세 일반 성인</b> 표준 MET를 사용합니다. MET는 활동의 에너지 비용을 나타내는 값입니다. 60세 이상은 이번 계산에서 제외하며, BMI·인바디로 강도를 정하지 않습니다.</p>
+    <p>걷기·러닝·근력·자전거·생활 스포츠 등을 분류별로 선택할 수 있습니다. 웨이트의 반복 수는 자료의 수행 조건이며 권장 반복 수가 아닙니다. 세트 수·중량을 자동 처방하지 않습니다.</p>
+    <p>긴 휴식·대기·다른 종목을 섞은 전체 시간을 하나의 MET로 계산하면 오차가 커질 수 있습니다. 해당 조건으로 수행한 시간을 구분해 기록하세요.</p>
     <p>이미 수행한 활동의 조건을 선택하세요. 속도·출력을 모르면 비슷하다고 임의로 고르지 마세요. 계산은 필수 운동량이나 운동 강도 추천이 아닙니다.</p>
     {activities.length > 0 ? <form onSubmit={calculate} onChange={() => setResult(null)} aria-label="실제 운동 계산"><fieldset className="profile-form exercise-fields" disabled={busy}><legend className="sr-only">실제 수행한 운동</legend>
       <label>운동 날짜<input type="date" name="date" required max={today()} defaultValue={today()}/></label>
       <label>운동 당시 나이 (세)<input type="number" name="age" required min="19" max="59" step="1" defaultValue={data.profile?.age as number | undefined}/></label>
-      <label className="wide">수행한 운동<select name="activity" aria-label="수행한 운동" required>{activities.map(activity => <option key={activity.code} value={activity.code}>{activity.name} · {activity.met} MET</option>)}</select></label>
+      <label className="wide">수행한 운동<select name="activity" aria-label="수행한 운동" required>{[...new Set(activities.map(activity => activity.category))].map(category => <optgroup key={category} label={category}>{activities.filter(activity => activity.category === category).map(activity => <option key={activity.code} value={activity.code}>{activity.name} · {activity.met} MET</option>)}</optgroup>)}</select></label>
       <label>운동 당시 체중 (kg)<input type="number" name="weight" required min="25" max="350" step="any" defaultValue={data.profile?.weight_kg as number | undefined}/></label>
       <label>운동 시간 (분)<input type="number" name="minutes" required min="0" max="300" step="any" defaultValue="30"/></label>
       <p className="wide">기본 체중·나이는 현재 프로필에서 가져옵니다. 과거 기록은 당시 값으로 바꾸세요. 0분은 0kcal로 기록할 수 있습니다.</p>
