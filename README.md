@@ -14,7 +14,7 @@
 | 체중·인바디 이력 | 측정일별 체중·체성분 등록, 체중 변화 그래프와 원본 표 |
 | 음식 검색·계산 | 공공 식품 검색, 섭취량(g) 입력, 한 끼 영양 합계 |
 | 기록과 분석 | 날짜별 식사 기록·삭제, 영양 합계, 최근 7일 기록 현황 |
-| 생활 개선 | 공식 출처와 등록된 값에 따른 규칙 기반 식사·활동 안내 |
+| 생활 개선 | 기록된 식사의 에너지 비율·나트륨 기여 식품·다음 식사 안내, 누락·불일치 시 평가 보류 |
 | 저장 | 로그인 시 PostgreSQL 저장; 미로그인 임시 모드는 실행 중 유지 또는 선택한 브라우저 보관 |
 | 회원·활동 계획 | 가입·로그인·로그아웃, 경험·시간·현재 활동량·제한 사항에 따른 주간 계획 초안 |
 
@@ -25,10 +25,10 @@
 - Python `.venv`, FastAPI·Uvicorn, React·TypeScript·Vite를 준비했습니다.
 - 식약처 공공 API 전체 341,644개를 수집하고, 100g 기준 290,871개를 검색·계산용으로 정제했습니다. 다른 기준량 50,723개와 검토 대상 50개는 별도로 보존합니다.
 - 결측값·숫자 0, g·mg, 기준량을 구분합니다. 실제 수집 파일·인증키·개인 기록은 Git에서 제외합니다.
-- 백엔드 82개 테스트(DB 통합 9개 포함), 브라우저 10개 시나리오, TypeScript 검사와 프론트엔드 빌드로 검증합니다. 아래 상세 안내에 실제 실행 결과를 기록합니다.
+- 백엔드 90개 테스트(DB 통합 9개 포함), 브라우저 11개 시나리오, TypeScript 검사와 프론트엔드 빌드로 검증합니다. 아래 상세 안내에 실제 실행 결과를 기록합니다.
 - [공개 GitHub 저장소](https://github.com/seunghyeon20000713/nourishon)에 소스·가상 테스트·문서를 관리합니다.
 
-현재 사용법과 제한: [로컬 MVP](docs/local-mvp.md), [화면·프로필 개선](docs/dashboard-and-profiles.md), [DB·회원·활동 계획](docs/accounts-and-storage.md).
+현재 사용법과 제한: [로컬 MVP](docs/local-mvp.md), [화면·프로필 개선](docs/dashboard-and-profiles.md), [DB·회원·활동 계획](docs/accounts-and-storage.md), [영양 구성 검토](docs/nutrition-review.md).
 데이터 작업 기록: [전체 수집](docs/full-api-collection.md), [전체 정제](docs/full-data-normalization.md), [공공 API 연결](docs/public-api-connection.md).
 
 ## 영양 계산

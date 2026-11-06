@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from backend.food_search import _normalize_name
 from backend.meal import calculate_meal
 from backend.profile import ProfileInput, estimate_profile
+from backend.nutrition_review import ReviewInput, review_nutrition
 
 
 DEFAULT_DATA = (Path(__file__).resolve().parents[1] / "data/processed"
@@ -120,7 +121,7 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
 
     @app.middleware("http")
     async def private_response(request, call_next):
-        private = request.url.path.startswith(("/auth/", "/account/"))
+        private = request.url.path.startswith(("/auth/", "/account/", "/nutrition/"))
         if private and request.method in {"POST", "PUT", "PATCH"}:
             chunks, size = [], 0
             async for chunk in request.stream():
@@ -172,6 +173,13 @@ def create_app(data_path: Path = DEFAULT_DATA, rows: list[dict] | None = None, d
             return estimate_profile(payload)
         except ValueError:
             raise HTTPException(422, "프로필 값과 적용 범위를 확인하세요.") from None
+
+    @app.post("/nutrition/review", summary="기록된 식사 스냅샷의 영양 구성과 다음 식사 안내")
+    def nutrition_review(payload: ReviewInput):
+        try:
+            return review_nutrition(payload)
+        except (ValueError, OverflowError):
+            raise HTTPException(422, "영양 값과 계산 범위를 확인하세요.") from None
 
     return app
 

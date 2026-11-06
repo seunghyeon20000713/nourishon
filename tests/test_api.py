@@ -36,6 +36,13 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         self.assertNotIn('practice-private-marker', response.text)
 
+    def test_nutrition_review_uses_consumed_snapshot_values(self):
+        from tests.test_nutrition_review import meal
+        response=self.client.post('/nutrition/review',json={'meals':[meal()]})
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json()['macro_status'],'available')
+        self.assertEqual(response.headers['cache-control'],'no-store')
+
     def test_health_and_docs(self):
         self.assertEqual(self.client.get("/health").json()["food_count"], 3)
         self.assertEqual(self.client.get("/docs").status_code, 200)
