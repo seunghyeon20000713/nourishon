@@ -1,0 +1,6 @@
+.demo-mode { padding-top: 70px; }
+.demo-notice { position: fixed; top: 0; left: 0; right: 0; z-index: 100; min-height: 70px; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 12px 20px; background: #fff5df; border-bottom: 1px solid #ddca9f; color: #594520; font: 12px/1.7 'Noto Sans KR Variable',sans-serif; }
+.demo-notice button { flex: none; border: 1px solid #b9a577; border-radius: 6px; padding: 7px 10px; background: white; font: inherit; }
+.demo-mode .journal-rail.sidebar { top: 70px; }
+.demo-mode .account-tools { top: 100px; }
+@media(max-width:700px) { .demo-mode { padding-top: 108px; } .demo-notice { height: 108px; font-size: 11px; padding: 10px 14px; gap: 10px; } .demo-mode .journal-rail.sidebar { top: 108px; } .demo-mode .account-tools { top: 192px; } }

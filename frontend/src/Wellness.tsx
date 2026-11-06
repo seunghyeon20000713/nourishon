@@ -16,7 +16,7 @@ type Estimate = { bmi:number; maintenance_kcal:number; protein_reference_g:numbe
 export type WellnessData = { profile: Record<string,unknown>|null; estimate:Estimate|null; records:MealRecord[]; measurements?:Measurement[]; activityRecords?:ActivityRecord[]; exerciseInput?:ExerciseInput|null; exercisePlan?:ExercisePlan|null }
 export const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
 export const emptyData = ():WellnessData => ({profile:null,estimate:null,records:[]})
-export const storageKey = 'nourishon-local-mvp-v1'
+export const storageKey = import.meta.env.MODE === 'demo' ? 'nourishon-demo-v1' : 'nourishon-local-mvp-v1'
 export const labels:Record<string,string> = {energy:'열량',protein:'단백질',fat:'지방',carbohydrate:'탄수화물',sugar:'당류',fiber:'식이섬유',sodium:'나트륨'}
 export function aggregate(records:MealRecord[]) {
  const totals:Record<string,Nutrient>={}

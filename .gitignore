@@ -60,3 +60,7 @@ Thumbs.db
 
 # DB 덤프는 제외하되 데이터가 없는 소스 마이그레이션은 보존
 !/backend/migrations/*.sql
+
+# Sites 체험판의 별도 체크아웃·빌드 (소스는 frontend/에서 관리)
+/sites-preview/
+/frontend/dist-demo/
