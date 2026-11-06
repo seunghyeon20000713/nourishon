@@ -35,11 +35,14 @@ class DeploymentTests(unittest.TestCase):
         from backend.web import create_web_app
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary);(root/'assets').mkdir();(root/'index.html').write_text('practice-ui')
+            (root/'decoration').mkdir();(root/'decoration/journal-sprig.png').write_bytes(b'practice-png')
             (root/'assets/app.js').write_text('/* practice */');(root/'.env').write_text('do-not-serve-this')
             api=create_app(rows=[practice_row('practice-1','가상 식품')])
             with TestClient(create_web_app(api=api,frontend_path=root)) as client:
                 self.assertEqual(client.get('/').text,'practice-ui')
                 self.assertEqual(client.get('/assets/app.js').status_code,200)
+                self.assertEqual(client.get('/decoration/journal-sprig.png').content,b'practice-png')
+                self.assertEqual(client.get('/decoration/other.png').status_code,404)
                 self.assertEqual(client.get('/api/foods',params={'q':'가상'}).json()['total'],1)
                 self.assertEqual(client.get('/api/unknown').status_code,404)
                 for path in ['/.env','/.git/config','/data/foods.json','/assets/.env','/backend/settings.py']:

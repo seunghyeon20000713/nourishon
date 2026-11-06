@@ -1,4 +1,4 @@
-import { DailyActions } from './DailyActions'
+import { BodyOverview } from './BodyOverview'
 import { GettingStarted } from './GettingStarted'
 import { useState } from 'react'
 import { ArrowUpRight, ChevronLeft, ChevronRight, CalendarDays, Info } from 'lucide-react'
@@ -27,8 +27,8 @@ export function Dashboard({data,onMeal,onView}:{data:WellnessData;onMeal:(kind:s
  const macros=review?.macros??[]
  const fiberMissing=totals.fiber.status!=='complete'
  return <section className="journal-dashboard" aria-labelledby="journal-title">
-  <div className="journal-page-heading"><h1 id="journal-title">기록으로 보는 나의 영양</h1><div className="journal-date"><button aria-label="이전 날짜" onClick={()=>setDay(shiftDay(day,-1))}><ChevronLeft size={18}/></button><label><span className="sr-only">요약 날짜</span><input aria-label="요약 날짜" type="date" value={day} max={today()} onChange={e=>{if(e.target.value)setDay(e.target.value)}}/><span>{humanDate}</span><CalendarDays size={18}/></label><button aria-label="다음 날짜" disabled={day>=today()} onClick={()=>setDay(shiftDay(day,1))}><ChevronRight size={18}/></button></div></div>
-  <DailyActions data={data} day={day} onView={onView} onMeal={onMeal}/>
+  <div className="journal-page-heading"><h1 id="journal-title">오늘의 나를 기록해요</h1><div className="journal-date"><button aria-label="이전 날짜" onClick={()=>setDay(shiftDay(day,-1))}><ChevronLeft size={18}/></button><label><span className="sr-only">요약 날짜</span><input aria-label="요약 날짜" type="date" value={day} max={today()} onChange={e=>{if(e.target.value)setDay(e.target.value)}}/><span>{humanDate}</span><CalendarDays size={18}/></label><button aria-label="다음 날짜" disabled={day>=today()} onClick={()=>setDay(shiftDay(day,1))}><ChevronRight size={18}/></button></div></div>
+  <BodyOverview data={data} day={day} onView={onView} onMeal={onMeal}/>
   <GettingStarted data={data} onView={onView}/>
   <div className="journal-columns"><div className="journal-analysis">  <div className="journal-summary"><span>기록된 열량 <strong>{energy.known_total===null?'—':fmt(energy.known_total)}</strong> {energy.known_total===null?'':'kcal'}{energy.status==='partial'&&<small> · 일부 누락</small>}</span><span>추정 유지 에너지 <strong>{data.estimate?fmt(data.estimate.maintenance_kcal):'—'}</strong> {data.estimate?'kcal':''}</span><span>{records.length?<><strong>{records.length}</strong>개 식사 기록</>:'아직 기록한 식사가 없어요'}</span></div>
 <section className="composition-section"><div className="journal-section-heading"><h2>기록된 식사의 에너지 구성</h2><span>2025 한국인 영양소 섭취기준 참고</span></div>

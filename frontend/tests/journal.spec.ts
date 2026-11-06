@@ -14,7 +14,7 @@ test('선택 시안의 기록 대시보드·날짜·이동과 모바일',async({
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message))
  await page.setViewportSize({width:1440,height:1024})
  await seedJournal(page)
- await expect(page.getByRole('heading',{name:'기록으로 보는 나의 영양'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'오늘의 나를 기록해요'})).toBeVisible()
  await expect(page.getByRole('img',{name:'탄수화물 55%, 참고 범위 50~65%'})).toBeVisible()
  await expect(page.locator('.composition-section .recharts-line-curve')).toHaveCount(3)
  await expect(page.locator('.composition-section .recharts-reference-dot-dot')).toHaveCount(3)

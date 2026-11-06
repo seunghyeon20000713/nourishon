@@ -5,6 +5,7 @@ import Introduction from './Introduction'
 import './fonts'
 import './styles.css'
 import './journal.css'
+import './personal-journal.css'
 
 if (import.meta.env.MODE === 'demo') setupDemo()
 

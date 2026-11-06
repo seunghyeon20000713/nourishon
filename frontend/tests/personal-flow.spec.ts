@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test('개인 홈·계정 진입·내 정보·모바일 바로가기', async ({ page }) => {
   await page.goto('/#dashboard')
-  await expect(page.getByRole('heading', { name: '기록으로 보는 나의 영양' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '오늘의 나를 기록해요' })).toBeVisible()
   const account = page.locator('#account-tools')
   await expect(account.locator(':scope > summary')).toContainText('로그인 / 회원가입')
   await account.locator(':scope > summary').click()
@@ -18,7 +18,7 @@ test('개인 홈·계정 진입·내 정보·모바일 바로가기', async ({ p
   await expect(page.getByRole('heading', { name: '내 몸과 목표', exact: true })).toBeVisible()
   await expect(profile).not.toHaveAttribute('open')
   await page.getByRole('button', { name: '영양 대시보드', exact: true }).click()
-  await expect(page.getByRole('region', { name: '하루 기록 바로가기' })).toBeVisible()
+  await expect(page.getByRole('complementary', { name: '하루 기록 바로가기' })).toBeVisible()
   await page.getByRole('button', { name: '운동 기록하기', exact: true }).click()
   await expect(page.locator('#activity-log-title')).toBeInViewport()
   await page.setViewportSize({ width: 390, height: 844 })

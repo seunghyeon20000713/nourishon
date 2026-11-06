@@ -44,6 +44,10 @@ def create_web_app(api=None, frontend_path: Path | None = None):
     def logo():
         return FileResponse(directory/'brand/nourishon-mark.png')
 
+    @web.get('/decoration/journal-sprig.png')
+    def journal_decoration():
+        return FileResponse(directory/'decoration/journal-sprig.png', headers={'X-Content-Type-Options':'nosniff'})
+
     @web.get('/{path:path}')
     def page(path: str):
         if path and (path.startswith(('.', 'data/', 'backend/', 'private/', 'uploads/', 'assets/')) or '.' in path.split('/')[-1]):
