@@ -1,0 +1,33 @@
+# 검토용 예시입니다. 이번 작업에서 Render 리소스를 생성하지 않았습니다.
+# 실제 생성 전 무료 플랜·30일 DB 만료·데이터 배치·테스터 범위를 확인하세요.
+services:
+  - type: web
+    name: nourishon-staging
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: bash scripts/build-staging.sh
+    startCommand: bash scripts/start-staging.sh
+    healthCheckPath: /api/ready
+    autoDeployTrigger: "off"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.3"
+      - key: NODE_VERSION
+        value: "24.22.2"
+      - key: NOURISHON_ENV
+        value: staging
+      - key: NOURISHON_ALLOWED_ORIGINS
+        sync: false
+      # 소유자 계정이 아닌 제한된 앱 역할의 SSL 연결을 비밀 설정으로 입력합니다.
+      - key: NOURISHON_DATABASE_URL
+        sync: false
+      # 승인한 데이터의 별도 배치가 필요합니다. Git에 실제 파일을 넣지 않습니다.
+      - key: NOURISHON_FOOD_DATA_PATH
+        sync: false
+      - key: NOURISHON_FRONTEND_DIST
+        value: /opt/render/project/src/frontend/dist
+# DB는 아래 검토 항목대로 별도로 생성합니다. 소유자 연결을 앱에 자동 주입하지 않습니다.
+# Postgres: nourishon-staging-db / free / singapore / PostgreSQL 16
+# 마이그레이션과 제한된 앱 역할 준비 후 위 앱 연결을 입력해야 합니다.

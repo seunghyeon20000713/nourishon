@@ -6,9 +6,11 @@ import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from backend.settings import load_settings
 from backend.database import connect
+from backend.food_catalog import DiskFoodCatalog
 
 parser=argparse.ArgumentParser(description='외부 테스트 배포 설정을 확인합니다. 비밀값은 출력하지 않습니다.')
 parser.add_argument('--check-db',action='store_true',help='별도 테스트 DB 연결·스키마 확인')
+parser.add_argument('--check-food',action='store_true',help='식품 전체를 읽어 코드·기준량·개수·조회 파일 생성 확인')
 args=parser.parse_args()
 try:
     settings=load_settings()
@@ -20,13 +22,16 @@ try:
     if not (settings.frontend_path/'index.html').is_file():raise ValueError('일반 프런트엔드 빌드가 필요합니다.')
     scripts=list((settings.frontend_path/'assets').glob('*.js'))
     if not scripts or any('화면 체험판 · 식품' in path.read_text() for path in scripts):raise ValueError('체험판이 아닌 일반 프런트엔드 빌드가 필요합니다.')
+    if args.check_food:
+        catalog=DiskFoodCatalog(settings.food_path,report['output_count'])
+        catalog.close()
     if args.check_db:
         with connect(settings.database_url) as conn:
             versions={row['version'] for row in conn.execute('SELECT version FROM schema_migrations')}
             if not {1,2}.issubset(versions):raise ValueError('DB 마이그레이션이 필요합니다.')
             role=conn.execute('SELECT rolsuper,rolcreatedb,rolcreaterole FROM pg_roles WHERE rolname=current_user').fetchone()
             if any(role.values()):raise ValueError('제한된 권한의 앱 DB 역할을 사용하세요.')
-    print('설정·경로 확인 통과'+(' · DB 연결·스키마 확인 통과' if args.check_db else ' · 실제 DB 연결은 검사하지 않았습니다.'))
+    print('설정·경로 확인 통과'+(' · 전체 식품 검증 통과' if args.check_food else '')+(' · DB 연결·스키마 확인 통과' if args.check_db else ' · 실제 DB 연결은 검사하지 않았습니다.'))
 except ValueError as error:
     # 위 검증에서 만든 정해진 메시지만 표시한다. 드라이버 오류/DSN은 출력하지 않는다.
     if type(error) is ValueError and str(error).startswith(('NOURISHON_','외부 테스트','승인된','완료된','일반 프런트','체험판이','DB 마이그레이션','제한된')):
