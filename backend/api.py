@@ -1,6 +1,7 @@
 """로컬 음식 계산·회원·개인 기록 API. 외부 공개용 설정은 별도 단계."""
 
 import json
+import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Literal
@@ -18,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from backend.food_search import _normalize_name
 from backend.food_comparison import compare_foods
+from backend.food_catalog import DiskFoodCatalog
 from backend.meal import calculate_meal
 from backend.profile import ProfileInput, estimate_profile
 from backend.nutrition_review import ReviewInput, review_nutrition
@@ -70,6 +72,13 @@ class FoodCatalog:
             self.by_code[code] = (index, row)
             self.names.append(_normalize_name(row["FOOD_NM"]))
 
+    @property
+    def count(self):
+        return len(self.rows)
+
+    def compare(self, query, focus, offset, limit):
+        return compare_foods(self.rows, self.names, query, focus, offset, limit)
+
     def search(self, query: str, offset: int, limit: int) -> dict:
         keyword = _normalize_name(query)
         if not keyword:
@@ -109,16 +118,17 @@ def create_app(data_path: Path | None = None, rows: list[dict] | None = None, da
                 report = json.loads(data_path.with_name("report.json").read_text(encoding="utf-8"))
                 if report.get("status") != "completed":
                     raise ValueError
-                loaded = json.loads(data_path.read_text(encoding="utf-8"))
-                if len(loaded) != report["output_count"]:
-                    raise ValueError
+                app.state.catalog = DiskFoodCatalog(data_path, report["output_count"])
             else:
-                loaded = rows
-            app.state.catalog = FoodCatalog(loaded)
-        except (OSError, ValueError, TypeError, LookupError):
+                app.state.catalog = FoodCatalog(rows)
+        except (OSError, ValueError, TypeError, LookupError, sqlite3.Error):
             raise RuntimeError("완료된 로컬 정제 데이터가 필요합니다. 전체 정제를 먼저 실행하세요.") from None
-        yield
-        del app.state.catalog
+        try:
+            yield
+        finally:
+            if isinstance(app.state.catalog, DiskFoodCatalog):
+                app.state.catalog.close()
+            del app.state.catalog
 
     app = FastAPI(title="NourishOn 로컬 API", version="0.1.0", lifespan=lifespan,
                   description="로그인 후 개인 기록을 PostgreSQL에 저장합니다.",
@@ -178,7 +188,7 @@ def create_app(data_path: Path | None = None, rows: list[dict] | None = None, da
 
     @app.get("/health", summary="서버와 로컬 데이터 상태 확인")
     def health():
-        return {"status": "ok", "food_count": len(app.state.catalog.rows), "mode": f"{settings.mode}_authenticated" if app.state.database_url else "local_single_user"}
+        return {"status": "ok", "food_count": app.state.catalog.count, "mode": f"{settings.mode}_authenticated" if app.state.database_url else "local_single_user"}
 
     @app.get("/foods", response_model=SearchResult, summary="음식명 부분 검색")
     def foods(q: Annotated[str, Query(min_length=1, max_length=100)],
@@ -195,7 +205,7 @@ def create_app(data_path: Path | None = None, rows: list[dict] | None = None, da
                         offset: Annotated[int, Query(ge=0, le=10000)] = 0,
                         limit: Annotated[int, Query(ge=1, le=20)] = 8):
         try:
-            return compare_foods(app.state.catalog.rows, app.state.catalog.names, q, focus, offset, limit)
+            return app.state.catalog.compare(q, focus, offset, limit)
         except (ValueError, TypeError, OverflowError):
             raise HTTPException(422, "검색어와 식품 정보를 확인하세요.") from None
 
