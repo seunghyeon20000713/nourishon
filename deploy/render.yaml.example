@@ -1,5 +1,5 @@
 # 검토용 예시입니다. 이번 작업에서 Render 리소스를 생성하지 않았습니다.
-# 실제 생성 전 무료 플랜·30일 DB 만료·데이터 배치·테스터 범위를 확인하세요.
+# 실제 생성 전 무료 플랜·데이터 배치·테스터 범위를 확인하세요. DB는 Render가 아니라 Neon 무료 플랜을 사용합니다.
 services:
   - type: web
     name: nourishon-staging
@@ -23,11 +23,21 @@ services:
       # 소유자 계정이 아닌 제한된 앱 역할의 SSL 연결을 비밀 설정으로 입력합니다.
       - key: NOURISHON_DATABASE_URL
         sync: false
-      # 승인한 데이터의 별도 배치가 필요합니다. Git에 실제 파일을 넣지 않습니다.
+      # 빌드 때 비공개 GitHub Release에서 내려받아 data/food/에 배치합니다(Git에는 없음).
       - key: NOURISHON_FOOD_DATA_PATH
+        value: /opt/render/project/src/data/food/foods.json
+      - key: NOURISHON_FOOD_RELEASE_REPO
+        sync: false
+      - key: NOURISHON_FOOD_RELEASE_TAG
+        sync: false
+      - key: NOURISHON_FOOD_RELEASE_ASSET
+        sync: false
+      - key: NOURISHON_FOOD_RELEASE_SHA256
+        sync: false
+      # 그 비공개 저장소만, Contents 읽기 전용, 만료일 있는 세분화 토큰. 서버 시작 직전에 환경에서 지웁니다.
+      - key: NOURISHON_FOOD_RELEASE_TOKEN
         sync: false
       - key: NOURISHON_FRONTEND_DIST
         value: /opt/render/project/src/frontend/dist
-# DB는 아래 검토 항목대로 별도로 생성합니다. 소유자 연결을 앱에 자동 주입하지 않습니다.
-# Postgres: nourishon-staging-db / free / singapore / PostgreSQL 16
+# DB는 Neon 무료 프로젝트(AWS Singapore, PostgreSQL 16)에 별도로 만듭니다. 소유자 연결을 앱에 자동 주입하지 않습니다.
 # 마이그레이션과 제한된 앱 역할 준비 후 위 앱 연결을 입력해야 합니다.

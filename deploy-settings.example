@@ -4,3 +4,9 @@ NOURISHON_ALLOWED_ORIGINS=https://your-test-service.example.com
 NOURISHON_DATABASE_URL=postgresql://app-user:REPLACE_IN_HOSTING_SETTINGS@db.example.com/nourishon_staging?sslmode=require
 NOURISHON_FOOD_DATA_PATH=/srv/nourishon-food/foods.json
 NOURISHON_FRONTEND_DIST=/srv/nourishon/frontend/dist
+# 빌드 때 식품 정제본을 비공개 GitHub Release에서 내려받을 때만 사용합니다.
+NOURISHON_FOOD_RELEASE_REPO=your-account/your-private-food-repo
+NOURISHON_FOOD_RELEASE_TAG=food-20261105
+NOURISHON_FOOD_RELEASE_ASSET=food-data-20261105.tar.gz
+NOURISHON_FOOD_RELEASE_SHA256=64자리-16진수-해시
+NOURISHON_FOOD_RELEASE_TOKEN=REPLACE_IN_HOSTING_SETTINGS
