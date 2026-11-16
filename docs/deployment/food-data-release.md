@@ -30,12 +30,13 @@ Release 첨부는 커밋과 달리 파일당 100MB 제한이 적용되지 않는
 
 - 가짜 GitHub 서버 테스트 9개 통과: 정상 배치, 서명 주소에 토큰 미전송, 해시 불일치 시 미배치, 실패 시 기존 데이터 유지, 성공 시 교체, 오류에 토큰·서명 주소 미노출, 경로 조작·누락·추가 파일 거부, 잘못된 입력은 네트워크 전에 거부, 묶음 재현성.
 - 실제 정제본 묶음: 원본 `foods.json` 149,361,969 bytes → 묶음 11,149,575 bytes. 두 번 묶어 같은 SHA-256 `f8e6b1ce6f92e31ebd6271311b6a1c3bf0b07fe917228a4502d6f74e55656657`. 묶음 안의 두 파일이 원본과 SHA-256 일치.
-- 묶음은 `data/release/`(Git 제외)에 있다. 실제 GitHub·Render 환경에서의 다운로드는 아직 실행하지 않았다.
+- 묶음은 `data/release/`(Git 제외)에 있다.
+- 실제 GitHub 확인(2026-11-16, 로컬 PC에서 실행): 비공개 저장소 `nourishon-food-data`(PRIVATE 확인)에 Release `food-20261105`를 만들고 묶음(11,149,575 bytes)을 첨부했다. `fetch`로 실제 내려받아 SHA-256 일치·`foods.json` 원본과 바이트 동일을 확인했다. 해시를 틀리게 주면 미배치, 잘못된 토큰은 HTTP 401로 중단하고 비밀값을 출력하지 않았다. 이 확인에는 개발자 PC의 `gh` 로그인 토큰을 사용했다. Render용 세분화 토큰과 Render 빌드 환경에서의 실행은 아직이다.
 
 ## 개발자가 직접 할 일 (계정 작업)
 
-1. GitHub에서 **비공개(Private)** 저장소를 새로 만든다. 예: `nourishon-food-data`. README 등 아무 파일 없이 만들어도 된다.
-2. 그 저장소에 Release를 만들고(태그 예: `food-20261105`) `data/release/food-data-20261105.tar.gz`를 첨부한다.
+1. ~~비공개 저장소 생성~~ 완료: `seunghyeon20000713/nourishon-food-data` (PRIVATE)
+2. ~~Release 생성·첨부~~ 완료: 태그 `food-20261105`, 첨부 `food-data-20261105.tar.gz`
 3. GitHub Settings → Developer settings → Personal access tokens → **Fine-grained tokens**에서 토큰을 만든다.
    - Repository access: **Only select repositories** → 위 비공개 저장소 하나만
    - Permissions: Repository permissions → **Contents: Read-only** (Metadata: Read-only는 자동 포함). 나머지는 모두 No access
