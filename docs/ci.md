@@ -11,7 +11,7 @@ CI(Continuous Integration, 지속적 통합)는 코드를 GitHub에 올릴 때�
 ```
 push(main) 또는 PR
   → GitHub 임시 Ubuntu 24.04 시작
-  → PostgreSQL 16 서비스 컨테이너(일회용 DB, 이름 nourishon_test)
+  → PostgreSQL 16·18 서비스 컨테이너를 각각 따로 실행(matrix: 16=로컬 개발, 18=Neon 외부 테스트)
   → Python 3.12.3 + requirements.txt 설치(pip 캐시 사용)
   → scripts/ci-prepare-db.py: 소유자로 마이그레이션 → 앱 역할 생성·권한 부여 → 앱 역할에 스키마 생성 권한이 없는지 확인
   → 앱 역할(nourishon_app)로 백엔드 테스트 118개 실행
@@ -55,3 +55,7 @@ push(main) 또는 PR
 - 수정: 모듈 수준 앱 생성을 없애고 `uvicorn --factory backend.web:create_web_app`으로 시작한다. 서버 동작은 같고, 불러오기 부작용만 사라진다.
 - 검증: Git 파일만 있는 깨끗한 복사본에서 수정 전 코드는 같은 오류로 실패, 수정 후 127개 통과. `--factory` 서버를 로컬에서 띄워 `/api/health` 200, `/` 200, `/.env` 404 확인 후 종료.
 - 교훈: 로컬에만 있는 파일(빌드 결과·데이터) 때문에 통과하는 테스트는 CI 같은 깨끗한 환경에서만 드러난다.
+
+## PostgreSQL 16·18 두 버전 실행 (2026-11-16)
+
+Neon 프로젝트가 PostgreSQL 18로 만들어져 로컬 개발 DB(16)와 버전이 달라졌다. 로컬을 18로 올리거나 Neon을 16으로 다시 만드는 대신, CI matrix로 같은 테스트를 두 버전에서 각각 실행한다. `fail-fast: false`로 한 버전이 실패해도 다른 버전 결과를 끝까지 본다. 공개 저장소라 실행 횟수가 늘어도 비용은 없다.

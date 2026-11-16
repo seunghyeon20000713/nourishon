@@ -20,7 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from backend.database import connect, grant_app_role, migrate  # noqa: E402
 
 APP_ROLE = 'nourishon_app'
-EXPECTED_MAJOR = 16
+# CI가 두 버전 모두에서 전체 테스트를 실행한다(.github/workflows/backend-tests.yml).
+SUPPORTED_MAJORS = (16, 18)
 
 
 class PrepareError(Exception):
@@ -57,7 +58,7 @@ def check_owner_dsn(dsn: str, require_remote: bool = True) -> dict:
 
 
 def prepare(owner_dsn: str, role: str = APP_ROLE, rotate: bool = False, require_remote: bool = True,
-            expected_major: int | None = EXPECTED_MAJOR, out=print) -> str | None:
+            supported: tuple[int, ...] | None = SUPPORTED_MAJORS, out=print) -> str | None:
     """마이그레이션·역할·권한을 적용한다. 새 비밀번호를 만들었으면 앱 연결 문자열을 돌려준다."""
     check_owner_dsn(owner_dsn, require_remote)
     owner_dsn, changed = direct_connection(owner_dsn)
@@ -69,8 +70,9 @@ def prepare(owner_dsn: str, role: str = APP_ROLE, rotate: bool = False, require_
                                 ('server_version_num',)).fetchone()
             major = info[0] // 10000
             out(f'접속 성공: PostgreSQL {major}, DB 이름 {info[1]}')
-            if expected_major and major != expected_major:
-                raise PrepareError(f'PostgreSQL {expected_major}이 필요합니다(현재 {major}). 변경 없이 종료합니다.')
+            if supported and major not in supported:
+                versions = '·'.join(map(str, supported))
+                raise PrepareError(f'CI로 검증한 PostgreSQL {versions}만 허용합니다(현재 {major}). 변경 없이 종료합니다.')
             exists = conn.execute('SELECT 1 FROM pg_roles WHERE rolname=%s', (role,)).fetchone()
             password = None
             if not exists or rotate:

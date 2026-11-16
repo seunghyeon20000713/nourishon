@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | GitHub | 기존 `seunghyeon20000713/nourishon`, `main` | 코드·문서만 제공 |
 | Web Service | `nourishon-staging`, Python, Free, Singapore | React 빌드 + FastAPI `/api` |
-| Postgres | `nourishon-staging-db`, Free, Singapore, PostgreSQL 16 | 새 테스트 계정·가상 신체·식사 기록 |
+| Postgres | Neon `nourishon-staging`, Free, AWS Singapore, PostgreSQL 18 (2026-11-16 변경: Render 30일 만료 회피) | 새 테스트 계정·가상 신체·식사 기록 |
 | 앱 DB 역할 | 소유자와 분리, 필요한 테이블 읽기·쓰기만 | 실행 중 스키마 생성·권한 관리 방지 |
 | 식품 데이터 | 승인한 정제본을 별도 비공개 경로로 제공 | GitHub·웹 정적 파일로 공개하지 않음 |
 
@@ -73,10 +73,16 @@ DB는 Render 무료 Postgres(30일 만료) 대신 Neon 무료 플랜을 쓴다. 
 
 `scripts/prepare-staging-db.py`를 개발자 터미널에서 실행한다. 소유자 연결은 `read -s`로 입력해 환경변수로만 전달한다.
 
-1. 접속 후 PostgreSQL 버전·DB 이름 출력. 16이 아니면 변경 없이 종료
+1. 접속 후 PostgreSQL 버전·DB 이름 출력. CI로 검증한 16·18이 아니면 변경 없이 종료
 2. 앱 역할 `nourishon_app` 생성(무작위 32바이트 비밀번호, LOGIN만, SUPERUSER·CREATEDB·CREATEROLE 없음)
 3. 기존 마이그레이션 적용 → `grant_app_role()`로 스키마 사용·테이블 읽기/쓰기만 허용
 4. 앱 역할로 접속해 테이블 조회 가능·스키마 생성 불가 확인
 5. 앱 연결 문자열을 터미널에 한 번만 출력 → Render `NOURISHON_DATABASE_URL`에만 입력. 재실행 시 비밀번호 유지, `--rotate-password`로 교체
 
 로컬 검증: 비밀번호 인증 임시 PostgreSQL 16 서버(DB 이름 `neondb`, 소유자 `neondb_owner`)에서 위 흐름, 재실행, 비밀번호 교체 후 이전 비밀번호 거부, 앱 역할 테이블 생성 거부, 버전 불일치 시 무변경을 확인했다. 입력 검사 단위 테스트 3개(SSL 없음·로컬·앱 역할 연결 거부, 오류에 비밀값 미노출). 실제 Neon 실행 결과는 아래에 추가한다.
+
+### 실제 Neon 1차 실행: 버전 불일치로 무변경 종료 (2026-11-16)
+
+Neon 온보딩이 버전 선택 없이 PostgreSQL 18로 프로젝트를 만들었다. 준비 스크립트는 당시 16만 허용했으므로 `접속 성공: PostgreSQL 18, DB 이름 neondb` 출력 후 **아무것도 바꾸지 않고 종료**했다. 풀링 주소는 직접 연결 주소로 자동 변환됐다.
+
+결정: Neon을 16으로 다시 만들지 않고 18을 사용한다. 대신 CI를 PostgreSQL 16(로컬 개발)·18(외부 테스트) 두 버전에서 모두 실행하고, 두 결과가 통과한 뒤에만 Neon에 마이그레이션을 적용한다. 스크립트는 CI로 검증한 16·18만 허용한다.

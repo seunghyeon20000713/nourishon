@@ -18,13 +18,19 @@ concurrency:
 
 jobs:
   unittest:
+    name: unittest (PostgreSQL ${{ matrix.postgres }})
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      # 한 버전이 실패해도 다른 버전 결과를 끝까지 본다.
+      fail-fast: false
+      matrix:
+        # 16: 로컬 개발 DB, 18: 외부 테스트 DB(Neon)
+        postgres: ['16', '18']
 
     services:
       postgres:
-        # 로컬 개발 DB와 같은 메이저 버전
-        image: postgres:16
+        image: postgres:${{ matrix.postgres }}
         env:
           POSTGRES_USER: postgres
           # 실행기 안에서만 접속 가능하고 작업이 끝나면 사라지는 일회용 DB의 가짜 비밀번호다.
