@@ -66,3 +66,17 @@ Render 생성 화면에서 Root Directory는 저장소 루트로 두고 다음�
 - [Blueprint 설정·자동 배포 Off](https://render.com/docs/blueprint-spec)
 
 최종 단일 주소 브라우저 검증은 **12개 통과(14.4초)**였다. 가입·재로그인·DB 기록·음식 비교·섭취량 계산·모바일 흐름을 포함한다. 이 검증 뒤 QA 전용 8001 서버는 종료했다. 기존 개발 서버와 실제 로컬 개인 DB는 유지했다.
+
+## Neon 외부 DB 준비 (2026-11-16)
+
+DB는 Render 무료 Postgres(30일 만료) 대신 Neon 무료 플랜을 쓴다. 프로젝트 `nourishon-staging`, AWS Asia Pacific (Singapore). Neon 온보딩의 CLI(`neon init`, `neon env pull`)와 Data API는 사용하지 않는다. 소유자 연결 정보를 프로젝트 파일로 남기지 않고, 브라우저용 HTTP DB 접근 경로를 열지 않기 위해서다.
+
+`scripts/prepare-staging-db.py`를 개발자 터미널에서 실행한다. 소유자 연결은 `read -s`로 입력해 환경변수로만 전달한다.
+
+1. 접속 후 PostgreSQL 버전·DB 이름 출력. 16이 아니면 변경 없이 종료
+2. 앱 역할 `nourishon_app` 생성(무작위 32바이트 비밀번호, LOGIN만, SUPERUSER·CREATEDB·CREATEROLE 없음)
+3. 기존 마이그레이션 적용 → `grant_app_role()`로 스키마 사용·테이블 읽기/쓰기만 허용
+4. 앱 역할로 접속해 테이블 조회 가능·스키마 생성 불가 확인
+5. 앱 연결 문자열을 터미널에 한 번만 출력 → Render `NOURISHON_DATABASE_URL`에만 입력. 재실행 시 비밀번호 유지, `--rotate-password`로 교체
+
+로컬 검증: 비밀번호 인증 임시 PostgreSQL 16 서버(DB 이름 `neondb`, 소유자 `neondb_owner`)에서 위 흐름, 재실행, 비밀번호 교체 후 이전 비밀번호 거부, 앱 역할 테이블 생성 거부, 버전 불일치 시 무변경을 확인했다. 입력 검사 단위 테스트 3개(SSL 없음·로컬·앱 역할 연결 거부, 오류에 비밀값 미노출). 실제 Neon 실행 결과는 아래에 추가한다.
