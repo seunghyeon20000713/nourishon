@@ -27,6 +27,19 @@ class PrepareError(Exception):
     """비밀값을 담지 않는 오류."""
 
 
+def direct_connection(dsn: str) -> tuple[str, bool]:
+    """Neon 풀링 주소(엔드포인트 이름 뒤 -pooler)를 직접 연결 주소로 바꾼다.
+
+    마이그레이션·역할 생성과 worker 1개 서버에는 중계기(PgBouncer) 없는 직접 연결이 단순하고 확실하다.
+    """
+    options = conninfo_to_dict(dsn)
+    host = options.get('host') or ''
+    first, _, rest = host.partition('.')
+    if first.endswith('-pooler') and rest.endswith('neon.tech'):
+        return make_conninfo(dsn, host=f"{first.removesuffix('-pooler')}.{rest}"), True
+    return dsn, False
+
+
 def check_owner_dsn(dsn: str, require_remote: bool = True) -> dict:
     try:
         options = conninfo_to_dict(dsn)
@@ -47,6 +60,9 @@ def prepare(owner_dsn: str, role: str = APP_ROLE, rotate: bool = False, require_
             expected_major: int | None = EXPECTED_MAJOR, out=print) -> str | None:
     """마이그레이션·역할·권한을 적용한다. 새 비밀번호를 만들었으면 앱 연결 문자열을 돌려준다."""
     check_owner_dsn(owner_dsn, require_remote)
+    owner_dsn, changed = direct_connection(owner_dsn)
+    if changed:
+        out('풀링 주소를 직접 연결 주소로 바꿔 사용합니다.')
     try:
         with psycopg.connect(owner_dsn, autocommit=True, connect_timeout=15) as conn:
             info = conn.execute('SELECT current_setting(%s)::int AS num, current_database() AS db',

@@ -26,6 +26,18 @@ class PrepareStagingDbTests(unittest.TestCase):
         options = module.check_owner_dsn('postgresql://neondb_owner:x@ep-test.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
         self.assertEqual(options['dbname'], 'neondb')
 
+    def test_neon_pooler_host_becomes_direct_host(self):
+        from psycopg.conninfo import conninfo_to_dict
+        dsn, changed = module.direct_connection('postgresql://neondb_owner:x@ep-cool-name-123-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require')
+        self.assertTrue(changed)
+        options = conninfo_to_dict(dsn)
+        self.assertEqual(options['host'], 'ep-cool-name-123.ap-southeast-1.aws.neon.tech')
+        self.assertEqual((options['sslmode'], options['user'], options['dbname']), ('require', 'neondb_owner', 'neondb'))
+        same, changed = module.direct_connection('postgresql://neondb_owner:x@ep-cool-name-123.ap-southeast-1.aws.neon.tech/neondb?sslmode=require')
+        self.assertFalse(changed)
+        _, changed = module.direct_connection('postgresql://u:x@my-pooler.example.com/db?sslmode=require')
+        self.assertFalse(changed)
+
     def test_missing_env_exits_nonzero(self):
         import os
         from unittest.mock import patch
