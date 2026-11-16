@@ -90,3 +90,18 @@ Neon 온보딩이 버전 선택 없이 PostgreSQL 18로 프로젝트를 만들�
 ### 실제 Neon 2차 실행: 준비 완료 (2026-11-16)
 
 CI(PostgreSQL 16.16·18.7, 각 131개 통과·건너뜀 0) 확인 후 개발자 터미널에서 실행했다. 출력: 풀링 주소 → 직접 연결 주소 변환, `PostgreSQL 18, DB 이름 neondb` 접속, 앱 역할 `nourishon_app` 생성, 마이그레이션 적용, 스키마 사용·테이블 읽기/쓰기 권한만 부여, 앱 역할로 접속해 테이블 조회 가능·스키마 생성 불가 확인. 앱 연결 문자열은 개발자가 별도 보관했고 채팅·Git에는 남기지 않았다. 소유자 연결 문자열은 저장하지 않았다.
+
+## Render 실제 배포와 외부 확인 (2026-11-16)
+
+Render 무료 Web Service `nourishon-staging`(Singapore, Python 3, Free 0.1 CPU·512MB), Auto-Deploy Off, Health Check `/api/ready`. 커밋 `f1015f6` 첫 배포. 주소: https://nourishon-staging.onrender.com
+
+- 시간: 배포 시작 16:01:20 → 외부에서 `/api/ready` 200 첫 확인 16:08:20(빌드 + 첫 시작 합계 약 7분, 20~40초 간격 확인이라 실제 완료는 그 사이). 절전 후 재시작 시간은 아직 측정하지 않았다.
+- 외부 확인(개발자 PC에서 요청): `/`·`/api/health`·`/api/ready` 200(`{"status":"ready"}`), 식품 검색 "두부" 3,218건, `/.env`·`/.git/config`·`/data/food/foods.json`·`/backend/settings.py`·`/api/docs` 404, 허용하지 않은 Host 403, `/api/auth/me` 응답 `cache-control: no-store`·`x-content-type-options: nosniff`.
+- 개발자 브라우저 확인: 가상 계정으로 사용 흐름이 정상 동작한다고 보고받음.
+- 식품 정제본: 빌드 중 비공개 Release에서 내려받아 SHA-256 일치 후 배치(검색 결과로 간접 확인).
+
+### 지인 공유 전 보완 필요 (2026-11-16 발견)
+
+1. 화면에 테스트 서버·가상 데이터 전용 안내가 없다(Sites 체험판에만 있음).
+2. 회원 탈퇴(계정·기록 삭제) 기능이 없다.
+3. 로그인 시도 제한이 `request.client.host` 기준인데, Render 프록시 뒤에서 uvicorn이 프록시 IP를 사용자 IP로 볼 가능성이 있다(추정, 미검증). 그러면 모든 사용자가 한 IP 묶음(15분 40회)을 공유한다.
