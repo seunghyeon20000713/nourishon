@@ -41,6 +41,13 @@ class Credentials(BaseModel):
         return self
 
 
+class AccountDeletion(BaseModel):
+    """회원 탈퇴 확인: 비밀번호 재입력 + 영구 삭제 동의."""
+    model_config = ConfigDict(extra='forbid')
+    password: SecretStr
+    confirm: Literal[True]
+
+
 class Registration(Credentials):
     username: Annotated[str, StringConstraints(to_lower=True, strip_whitespace=True, pattern=r'^[a-z0-9_]{4,40}$')]
 
@@ -234,6 +241,33 @@ def logout(request: Request, response: Response):
     with connect(dsn(request)) as conn:
         row = session(request, conn, write=True)
         conn.execute('DELETE FROM sessions WHERE token_hash=%s', (row['token_hash'],))
+    response.delete_cookie(request.app.state.settings.cookie_name, path='/', secure=request.app.state.settings.secure_cookie, httponly=True, samesite='strict')
+    return {'ok': True}
+
+
+@router.post('/account/delete')
+def delete_account(payload: AccountDeletion, request: Request, response: Response):
+    """계정과 모든 기록(세션·프로필·신체 측정·식사·운동)을 즉시 영구 삭제한다.
+
+    로그인·CSRF·Origin 확인 뒤 비밀번호를 다시 확인한다. 열린 화면만으로는 탈퇴할 수 없게 하기 위해서다.
+    비밀번호 시도는 로그인과 같은 제한을 받는다. 기록 삭제는 DB의 ON DELETE CASCADE로 한 번에 처리한다.
+    """
+    with connect(dsn(request)) as conn:
+        row = session(request, conn, write=True)
+    throttle(request, row['username'])
+    with connect(dsn(request)) as conn:
+        row = session(request, conn, write=True)
+        user = conn.execute('SELECT id,username,password_hash FROM users WHERE id=%s FOR UPDATE', (row['user_id'],)).fetchone()
+        try:
+            valid = HASHER.verify(user['password_hash'], payload.password.get_secret_value())
+        except (VerificationError, InvalidHashError):
+            valid = False
+        if not valid:
+            # 401은 화면이 "로그인 만료"로 처리하므로 403으로 구분한다.
+            raise HTTPException(403, '비밀번호가 맞지 않습니다. 기록은 삭제되지 않았습니다.')
+        conn.execute('DELETE FROM users WHERE id=%s', (user['id'],))
+        # 아이디별 시도 기록(해시)도 남기지 않는다.
+        conn.execute('DELETE FROM auth_attempts WHERE bucket=%s', (hashlib.sha256(f"user:{user['username']}".encode()).hexdigest(),))
     response.delete_cookie(request.app.state.settings.cookie_name, path='/', secure=request.app.state.settings.secure_cookie, httponly=True, samesite='strict')
     return {'ok': True}
 

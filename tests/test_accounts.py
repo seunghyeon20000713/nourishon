@@ -192,6 +192,62 @@ class AccountTests(unittest.TestCase):
             self.assertEqual(client.post('/auth/logout',headers=headers|{'X-CSRF-Token':response.json()['csrf_token']}).status_code,200)
             self.assertFalse(client.cookies.get('__Host-nourishon_session'))
 
+    def counts(self, user_id):
+        with connect(TEST_DSN) as conn:
+            return conn.execute(
+                'SELECT (SELECT count(*) FROM users WHERE id=%(u)s) AS users,'
+                ' (SELECT count(*) FROM sessions WHERE user_id=%(u)s) AS sessions,'
+                ' (SELECT count(*) FROM profiles WHERE user_id=%(u)s) AS profiles,'
+                ' (SELECT count(*) FROM meals m JOIN profiles p ON p.id=m.profile_id WHERE p.user_id=%(u)s) AS meals,'
+                ' (SELECT count(*) FROM body_measurements b JOIN profiles p ON p.id=b.profile_id WHERE p.user_id=%(u)s) AS measurements',
+                {'u': user_id}).fetchone()
+
+    def test_account_deletion_removes_all_own_records_only(self):
+        # 가상 계정 둘: A만 탈퇴하고 B의 기록은 그대로여야 한다.
+        a, password = self.register(); pid = self.profile_id()
+        self.assertEqual(self.client.put(f'/account/profiles/{pid}/data', json={'revision': 0, 'data': self.data()}, headers=self.headers(a)).status_code, 200)
+        with TestClient(create_app(rows=[practice_row('practice-1','연습용 음식')], database_url=TEST_DSN)) as other:
+            b, _ = self.register(other); bpid = self.profile_id(other)
+            self.assertEqual(other.put(f'/account/profiles/{bpid}/data', json={'revision': 0, 'data': self.data()}, headers=self.headers(b)).status_code, 200)
+            before_b = dict(self.counts(b['user']['id']))
+            self.assertEqual(dict(self.counts(a['user']['id'])), {'users': 1, 'sessions': 1, 'profiles': 1, 'meals': 1, 'measurements': 1})
+            token = self.client.cookies.get('nourishon_session')
+            r = self.client.post('/account/delete', json={'password': password, 'confirm': True}, headers=self.headers(a))
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(dict(self.counts(a['user']['id'])), {'users': 0, 'sessions': 0, 'profiles': 0, 'meals': 0, 'measurements': 0})
+            self.assertEqual(dict(self.counts(b['user']['id'])), before_b)
+            self.assertEqual(other.get('/account/profiles').status_code, 200)
+        # 지운 세션 쿠키로는 접근할 수 없고, 같은 아이디·비밀번호로 로그인할 수 없다.
+        self.client.cookies.set('nourishon_session', token)
+        self.assertEqual(self.client.get('/account/profiles').status_code, 401)
+        self.assertEqual(self.client.post('/auth/login', json={'username': a['user']['username'], 'password': password}, headers=HEADERS).status_code, 401)
+
+    def test_account_deletion_requires_password_confirmation_and_csrf(self):
+        a, password = self.register(); uid = a['user']['id']
+        cases = [
+            ({'password': 'wrong-password-123', 'confirm': True}, self.headers(a), 403),   # 비밀번호 틀림
+            ({'password': password, 'confirm': False}, self.headers(a), 422),             # 삭제 동의 없음
+            ({'password': password}, self.headers(a), 422),
+            ({'password': password, 'confirm': True}, HEADERS, 403),                       # CSRF 토큰 없음
+            ({'password': password, 'confirm': True}, self.headers(a) | {'Origin': 'https://evil.example.com'}, 403),
+        ]
+        for body, headers, code in cases:
+            with self.subTest(body=body.get('confirm'), code=code):
+                self.assertEqual(self.client.post('/account/delete', json=body, headers=headers).status_code, code)
+                self.assertEqual(self.counts(uid)['users'], 1)
+        with TestClient(create_app(rows=[practice_row('practice-1','연습용 음식')], database_url=TEST_DSN)) as anonymous:
+            self.assertEqual(anonymous.post('/account/delete', json={'password': password, 'confirm': True}, headers=HEADERS).status_code, 401)
+        self.assertEqual(self.counts(uid)['users'], 1)
+
+    def test_account_deletion_password_attempts_are_throttled(self):
+        a, password = self.register()
+        # 아이디별 제한은 15분 10회이고, 가입 요청이 이미 1회로 기록된다. 그래서 9번 틀린 뒤 10번째부터 막힌다.
+        codes = [self.client.post('/account/delete', json={'password': f'wrong-{i}-password', 'confirm': True}, headers=self.headers(a)).status_code for i in range(10)]
+        self.assertEqual(codes[:9], [403] * 9)
+        self.assertEqual(codes[9], 429)
+        self.assertEqual(self.client.post('/account/delete', json={'password': password, 'confirm': True}, headers=self.headers(a)).status_code, 429)
+        self.assertEqual(self.counts(a['user']['id'])['users'], 1)
+
     def test_login_throttle_uses_trusted_proxy_ip_header(self):
         # Render 앞단 Cloudflare 헤더를 켠 경우: 한 사용자 IP가 막혀도 다른 IP는 막히지 않아야 한다.
         from backend.settings import Settings

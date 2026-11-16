@@ -1524,3 +1524,46 @@ main {
 @media(max-width:700px) { .food-comparison { padding: 16px; } .food-comparison label { min-width: 0; flex-basis: 100%; } }
 .comparison-scroll-hint { display: none; }
 @media(max-width:700px) { .comparison-scroll-hint { display: block; font-size: 11px; color: #647366; } }
+
+/* 회원 탈퇴: 계정 패널 안의 접힌 위험 영역 */
+.account-delete {
+  margin-top:18px;
+  border-top:1px solid #e3e8e3;
+  padding-top:12px;
+  font-size:12px
+}
+.account-delete>summary {
+  cursor:pointer;
+  color:#8a3b2e;
+  font-weight:600
+}
+.account-delete p {
+  margin:10px 0 0
+}
+.account-delete .account-delete-note {
+  color:#7a857d;
+  font-size:11px
+}
+.account-banner .account-delete form {
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px
+}
+.account-banner .account-delete .account-delete-confirm {
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  line-height:1.5
+}
+.account-banner .account-delete .account-delete-confirm input {
+  width:auto;
+  margin:2px 0 0
+}
+.account-banner .account-delete form>button[type=submit] {
+  background:#a2402f;
+  border-color:#a2402f;
+  color:#fff
+}
+.account-banner .account-delete form>button[type=submit]:disabled {
+  opacity:.6
+}
