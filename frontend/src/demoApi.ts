@@ -1,5 +1,5 @@
 import sample from './demoData.json'
-import './demo.css'
+import { showSiteNotice } from './siteNotice'
 
 const DEMO_KEY = 'nourishon-demo-v1'
 const day = () => new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
@@ -41,11 +41,8 @@ function estimate(profile:Record<string,unknown>) {
 }
 export function setupDemo() {
  seed()
- document.body.classList.add('demo-mode')
- const banner=document.createElement('aside');banner.className='demo-notice';banner.setAttribute('aria-label','체험판 안내')
- const text=document.createElement('span');text.textContent='화면 체험판 · 식품·프로필은 가상 데이터입니다. 로그인·서버 저장 없음. 실제 개인정보는 입력하지 마세요.'
  const reset=document.createElement('button');reset.textContent='체험 초기화';reset.onclick=()=>{if(window.confirm('이 브라우저의 체험 기록을 초기화할까요?')){localStorage.removeItem(DEMO_KEY);location.reload()}}
- banner.append(text,reset);document.body.prepend(banner)
+ showSiteNotice('체험판 안내','화면 체험판 · 식품·프로필은 가상 데이터입니다. 로그인·서버 저장 없음. 실제 개인정보는 입력하지 마세요.',reset)
  const original=window.fetch.bind(window)
  window.fetch=async(input,init)=>{
   const url=new URL(input instanceof Request?input.url:String(input),location.href)

@@ -1,0 +1,8 @@
+/* 화면 맨 위 고정 안내 띠: 공개 체험판(demo)과 실제 기능 테스트 서버(staging)가 함께 사용 */
+.notice-mode { padding-top: 70px; }
+.site-notice { position: fixed; top: 0; left: 0; right: 0; z-index: 100; min-height: 70px; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 12px 20px; background: #fff5df; border-bottom: 1px solid #ddca9f; color: #594520; font: 12px/1.7 'Noto Sans KR Variable',sans-serif; }
+.site-notice button { flex: none; border: 1px solid #b9a577; border-radius: 6px; padding: 7px 10px; background: white; font: inherit; }
+.notice-mode .journal-rail.sidebar { top: 70px; }
+.notice-mode .account-tools { top: 100px; }
+@media(max-width:700px) { .notice-mode { padding-top: 108px; } .site-notice { height: 108px; font-size: 11px; padding: 10px 14px; gap: 10px; } .notice-mode .journal-rail.sidebar { top: 108px; } .notice-mode .account-tools { top: 192px; } }
+.site-notice strong { flex: none; }

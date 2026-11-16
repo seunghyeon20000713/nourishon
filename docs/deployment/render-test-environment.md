@@ -122,3 +122,18 @@ Render 무료 Web Service `nourishon-staging`(Singapore, Python 3, Free 0.1 CPU�
 Render 반영: 환경변수 `NOURISHON_CLIENT_IP_HEADER=cf-connecting-ip` 추가 후 Manual Deploy.
 
 출처: [Render: How Render handles DDoS attacks](https://render.com/articles/how-render-handles-ddos-attacks), [Render: Host PocketBase on Render(CF-Connecting-IP 권장)](https://render.com/articles/host-pocketbase-on-render), [Render 커뮤니티: X-Forwarded-For 덧붙임](https://community.render.com/t/accessing-client-ips-in-a-node-express-app/36282)
+
+### 보완 ① 테스트 서버 안내 띠 (2026-11-16)
+
+문제: 공개 Sites 체험판에는 "가상 데이터·실제 개인정보 입력 금지" 안내 띠가 있었다. 실제 가입·저장이 되는 테스트 서버 화면에는 안내가 없었다. 건강정보는 민감정보이므로, 지인이 실제 체중·식사를 입력하지 않도록 막아야 한다.
+
+선택:
+- 체험판 안내 띠를 공통 함수 `frontend/src/siteNotice.ts`와 `site-notice.css`로 분리했다(기존 `demo.css`를 이름만 바꿔 이동). 체험판과 테스트 서버가 같은 모양을 쓴다.
+- 테스트 서버 빌드에서만 켠다. `scripts/build-staging.sh`가 `VITE_NOURISHON_STAGING_NOTICE=1`로 빌드하므로, 로컬 일반 빌드에는 안내 띠가 없다.
+- 문구: "테스트 서버입니다 · 실제 개인정보·건강정보 대신 가상 정보만 입력하세요. 무료 서버라 첫 접속이 느릴 수 있고, 기록은 장기 보관을 보장하지 않습니다."
+- 회원가입 안내 문구도 테스트 서버에서는 "테스트 서버용 계정, 가상 아이디 사용"으로 바뀐다.
+- 체험판 문구(`화면 체험판 · 식품`)를 넣지 않았다. 이 문구가 있으면 `backend/web.py`가 체험판 빌드로 판단해 시작을 거부하기 때문이다.
+
+버린 대안: 서버 API에서 운영 모드를 받아 화면이 판단하는 방식. 첫 화면 표시 전에 요청이 하나 더 필요하고, 서버가 절전 중이면 안내가 늦게 뜬다. 빌드 시점 플래그는 화면이 뜨는 즉시 표시된다.
+
+검증(로컬): 같은 소스로 세 가지를 빌드해 비교했다. 테스트 서버 빌드에는 안내 문구가 있고 체험판 문구는 없다. 일반 빌드에는 안내 문구가 없다. 체험판 빌드에는 체험판 문구와 공통 CSS가 있다. TypeScript 검사·Vite 빌드 통과. 브라우저 캡처로 겹침을 확인하려 했으나 이 PC의 브라우저 실행이 시간 초과로 실패해, 레이아웃은 기존 체험판 안내 띠와 같은 CSS를 쓰는 것으로 대신 판단했다. 실제 배포 후 화면에서 확인한다.
