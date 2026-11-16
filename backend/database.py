@@ -33,6 +33,15 @@ def migrate(dsn: str):
             conn.execute(path.read_text())
 
 
+def grant_app_role(dsn: str, role: str = 'nourishon_app'):
+    """소유자 연결로 앱 역할에 스키마 사용·테이블 읽기/쓰기만 허용한다. 스키마 생성 권한은 주지 않는다."""
+    role_name = psycopg.sql.Identifier(role)
+    with connect(dsn) as conn:
+        conn.execute('REVOKE CREATE ON SCHEMA public FROM PUBLIC')
+        conn.execute(psycopg.sql.SQL('GRANT USAGE ON SCHEMA public TO {}').format(role_name))
+        conn.execute(psycopg.sql.SQL('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO {}').format(role_name))
+
+
 def setup_local():
     socket = f'/tmp/nourishon-postgres-{os.getuid()}'
     owner = f'host={socket} port=55432 user=nourishon_owner'
@@ -45,10 +54,7 @@ def setup_local():
     for name in ('nourishon', 'nourishon_test'):
         dsn = f'{owner} dbname={name}'
         migrate(dsn)
-        with connect(dsn) as conn:
-            conn.execute('REVOKE CREATE ON SCHEMA public FROM PUBLIC')
-            conn.execute('GRANT USAGE ON SCHEMA public TO nourishon_app')
-            conn.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO nourishon_app')
+        grant_app_role(dsn)
     config = ROOT / '.env.database'
     if not config.exists():
         config.write_text(f'NOURISHON_DATABASE_URL=host={socket} port=55432 user=nourishon_app dbname=nourishon\n')

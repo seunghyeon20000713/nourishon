@@ -1,5 +1,7 @@
 # NourishOn
 
+[![Backend tests](https://github.com/seunghyeon20000713/nourishon/actions/workflows/backend-tests.yml/badge.svg?branch=main)](https://github.com/seunghyeon20000713/nourishon/actions/workflows/backend-tests.yml)
+
 신체 정보와 식사 기록을 바탕으로 근거 있는 식생활 개선을 돕는 웹 서비스를 만드는 프로젝트입니다.
 
 19~64세 일반 성인을 대상으로 하는 로컬 개발 버전입니다. 현재는 아래 기능이 연결되어 있으며, PostgreSQL 저장·가입·로그인·일반 성인 활동 계획까지 연결했습니다. 챗봇·외부 서비스 배포는 아직 구현하지 않았습니다.
@@ -25,7 +27,7 @@
 - Python `.venv`, FastAPI·Uvicorn, React·TypeScript·Vite를 준비했습니다.
 - 식약처 공공 API 전체 341,644개를 수집하고, 100g 기준 290,871개를 검색·계산용으로 정제했습니다. 다른 기준량 50,723개와 검토 대상 50개는 별도로 보존합니다.
 - 결측값·숫자 0, g·mg, 기준량을 구분합니다. 실제 수집 파일·인증키·개인 기록은 Git에서 제외합니다.
-- 최근 백엔드 전체 117개 테스트와 관련 브라우저 12개 시나리오를 통과했습니다. 직전 화면 수정의 브라우저 전체 검증은 26개 통과했습니다. 상세 문서에 실행 범위와 결과를 구분해 기록합니다.
+- 백엔드 전체 118개 테스트를 GitHub Actions에서 push·PR마다 일회용 PostgreSQL로 자동 실행합니다(건너뜀 0 강제, [CI 구성](docs/ci.md)). 관련 브라우저 12개 시나리오는 로컬에서 통과했습니다. 직전 화면 수정의 브라우저 전체 검증은 26개 통과했습니다. 상세 문서에 실행 범위와 결과를 구분해 기록합니다.
 - [공개 GitHub 저장소](https://github.com/seunghyeon20000713/nourishon)에 소스·가상 테스트·문서를 관리합니다.
 
 현재 사용법과 제한: [로컬 MVP](docs/local-mvp.md), [화면·프로필 개선](docs/dashboard-and-profiles.md), [DB·회원·활동 계획](docs/accounts-and-storage.md), [영양 구성 검토](docs/nutrition-review.md).
@@ -49,6 +51,15 @@ NaN(유효한 숫자가 아님), 무한대, 음수, 표현 범위를 넘는 입�
 ```bash
 .venv/bin/python -B -m unittest discover -s tests -v
 ```
+
+계정·세션·CSRF 테스트 12개는 별도 테스트 DB가 있어야 실행되며, 없으면 건너뜁니다. 로컬 PostgreSQL(`bash scripts/postgres.sh start`)이 실행 중이면 다음처럼 전체를 실행합니다.
+
+```bash
+NOURISHON_TEST_DATABASE_URL="host=/tmp/nourishon-postgres-$(id -u) port=55432 user=nourishon_app dbname=nourishon_test" \
+  .venv/bin/python -B -m unittest discover -s tests -v
+```
+
+GitHub Actions는 같은 테스트를 건너뜀 없이 자동 실행합니다. [CI 구성과 이유](docs/ci.md)를 참고하세요.
 
 백엔드 검증은 가상 입력을 사용하므로 원본 식품 파일 없이도 실행할 수 있습니다. API 테스트에는 `requirements.txt`의 의존성이 필요합니다. 브라우저 시나리오는 로컬 서버와 정제본을 사용합니다.
 
