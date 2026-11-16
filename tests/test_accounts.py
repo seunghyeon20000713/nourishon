@@ -192,6 +192,25 @@ class AccountTests(unittest.TestCase):
             self.assertEqual(client.post('/auth/logout',headers=headers|{'X-CSRF-Token':response.json()['csrf_token']}).status_code,200)
             self.assertFalse(client.cookies.get('__Host-nourishon_session'))
 
+    def test_login_throttle_uses_trusted_proxy_ip_header(self):
+        # Render 앞단 Cloudflare 헤더를 켠 경우: 한 사용자 IP가 막혀도 다른 IP는 막히지 않아야 한다.
+        from backend.settings import Settings
+        settings = Settings(client_ip_header='cf-connecting-ip')
+        client = TestClient(create_app(rows=[practice_row('practice-1','연습용 음식')], database_url=TEST_DSN, settings=settings))
+        with client:
+            def attempt(ip):
+                name = 'practice_' + uuid4().hex[:16]  # 아이디별 제한(10회)에 걸리지 않게 매번 다른 가상 아이디
+                return client.post('/auth/login', json={'username': name, 'password': 'wrong-password-123'},
+                                   headers=HEADERS | {'CF-Connecting-IP': ip}).status_code
+            codes = [attempt('203.0.113.10') for _ in range(41)]
+            self.assertEqual(codes[:40], [401] * 40)
+            self.assertEqual(codes[40], 429)
+            self.assertEqual(attempt('203.0.113.20'), 401)
+            # X-Forwarded-For 위조로는 우회할 수 없다: 같은 CF 헤더면 계속 막힌다.
+            forged = client.post('/auth/login', json={'username': 'practice_' + uuid4().hex[:16], 'password': 'wrong-password-123'},
+                                 headers=HEADERS | {'CF-Connecting-IP': '203.0.113.10', 'X-Forwarded-For': '198.51.100.7'}).status_code
+            self.assertEqual(forged, 429)
+
     def test_request_body_limit(self):
         r=self.client.post('/auth/register',content=b'x'*2_000_001,headers=HEADERS|{'Content-Type':'application/json'})
         self.assertEqual(r.status_code,413)

@@ -1,5 +1,6 @@
 """로컬 회원·세션·소유권이 있는 PostgreSQL 기록 API."""
 import hashlib
+import ipaddress
 import secrets
 from datetime import date, datetime, timedelta, timezone
 from typing import Annotated, Literal
@@ -141,10 +142,26 @@ def session(request: Request, conn, write=False):
     return row
 
 
+def client_ip(request: Request) -> str:
+    """로그인 시도 제한에 쓰는 요청자 IP.
+
+    Render는 Cloudflare·로드밸런서를 거쳐 요청이 오므로 직접 연결 주소는 프록시 IP다.
+    그대로 쓰면 모든 사용자가 한 묶음(15분 40회)을 공유한다. 설정으로 켠 경우에만
+    프록시가 덮어쓰는 헤더를 쓰고, 값이 IP 형식이 아니면 직접 연결 주소로 돌아간다.
+    """
+    header = request.app.state.settings.client_ip_header
+    if header:
+        try:
+            return str(ipaddress.ip_address(request.headers.get(header, '').strip()))
+        except ValueError:
+            pass
+    return request.client.host if request.client else 'unknown'
+
+
 def throttle(request: Request, username: str):
     # 실패 시에도 별도 트랜잭션으로 시도 수가 남는다. 원문 아이디·IP는 기록하지 않는다.
     with connect(dsn(request)) as conn:
-        for key, limit in [(f'ip:{request.client.host}', 40), (f'user:{username}', 10)]:
+        for key, limit in [(f'ip:{client_ip(request)}', 40), (f'user:{username}', 10)]:
             bucket = hashlib.sha256(key.encode()).hexdigest()
             row = conn.execute('INSERT INTO auth_attempts(bucket,attempts,window_end) VALUES(%s,1,now()+interval \'15 minutes\') '
                 'ON CONFLICT(bucket) DO UPDATE SET attempts=CASE WHEN auth_attempts.window_end<now() THEN 1 ELSE auth_attempts.attempts+1 END, '

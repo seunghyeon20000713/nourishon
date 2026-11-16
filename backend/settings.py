@@ -5,6 +5,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from psycopg.conninfo import conninfo_to_dict
 
+# Render 앞단 Cloudflare가 요청마다 덮어쓰는 헤더만 허용한다. X-Forwarded-For 맨 앞 값은 사용자가 위조할 수 있다.
+TRUSTED_IP_HEADERS = (None, 'cf-connecting-ip')
 LOCAL_ORIGINS = ('http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8000', 'http://127.0.0.1:8000')
 
 @dataclass(frozen=True)
@@ -14,6 +16,8 @@ class Settings:
     database_url: str | None = field(default=None, repr=False)
     food_path: Path | None = None
     frontend_path: Path | None = None
+    # 프록시가 매 요청 덮어쓰는 실제 사용자 IP 헤더. 그 프록시 뒤에서만 켠다(직접 접속 가능하면 위조 가능).
+    client_ip_header: str | None = None
 
     @property
     def secure_cookie(self):
@@ -57,4 +61,7 @@ def load_settings():
             raise ValueError('외부 테스트 DB는 SSL 연결 설정이 필요합니다.')
         if not options.get('host') or options['host'].startswith('/') or options['host'] in {'localhost','127.0.0.1','::1'}:
             raise ValueError('외부 테스트용 별도 PostgreSQL 호스트가 필요합니다.')
-    return Settings(mode, origins, db, Path(food).resolve() if food else None, Path(frontend).resolve() if frontend else None)
+    ip_header = (os.environ.get('NOURISHON_CLIENT_IP_HEADER') or '').strip().lower() or None
+    if ip_header not in TRUSTED_IP_HEADERS:
+        raise ValueError('NOURISHON_CLIENT_IP_HEADER는 비우거나 cf-connecting-ip만 사용할 수 있습니다.')
+    return Settings(mode, origins, db, Path(food).resolve() if food else None, Path(frontend).resolve() if frontend else None, ip_header)

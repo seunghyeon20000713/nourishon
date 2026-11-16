@@ -105,3 +105,20 @@ Render 무료 Web Service `nourishon-staging`(Singapore, Python 3, Free 0.1 CPU�
 1. 화면에 테스트 서버·가상 데이터 전용 안내가 없다(Sites 체험판에만 있음).
 2. 회원 탈퇴(계정·기록 삭제) 기능이 없다.
 3. 로그인 시도 제한이 `request.client.host` 기준인데, Render 프록시 뒤에서 uvicorn이 프록시 IP를 사용자 IP로 볼 가능성이 있다(추정, 미검증). 그러면 모든 사용자가 한 IP 묶음(15분 40회)을 공유한다.
+
+### 보완 ③ 로그인 시도 제한의 사용자 IP (2026-11-16)
+
+문제: 로그인·가입 시도 제한(IP별 15분 40회, 아이디별 10회)이 `request.client.host`를 썼다. Render는 Cloudflare와 로드밸런서를 거쳐 요청을 전달하므로 이 값은 프록시 주소다. 그러면 여러 사용자가 한 묶음을 공유해, 몇 명이 비밀번호를 틀리면 모두가 15분 동안 막힐 수 있다. Render 문서와 서버 설정으로 판단한 것이며, 실제 Render에서 묶임 현상을 재현하지는 않았다.
+
+선택: `NOURISHON_CLIENT_IP_HEADER=cf-connecting-ip`를 설정한 경우에만 `CF-Connecting-IP`를 사용자 IP로 쓴다. Render 문서에 따르면 Cloudflare가 이 헤더를 요청마다 덮어써서 사용자가 위조할 수 없다. 값이 IP 형식이 아니면 직접 연결 주소를 쓴다.
+
+버린 대안:
+- `X-Forwarded-For` 맨 앞 값: Render 프록시는 사용자가 보낸 값을 지우지 않고 뒤에 덧붙인다. 그래서 맨 앞 값은 위조할 수 있고, 위조 IP를 바꿔 가며 제한을 우회할 수 있다.
+- uvicorn `--forwarded-allow-ips='*'`: 결국 같은 헤더를 믿게 되어 위와 같은 위조 문제가 있다.
+- 헤더를 기본으로 켜기: Cloudflare가 없는 곳에서는 위조할 수 있으므로 명시적으로 설정할 때만 쓴다.
+
+검증(로컬): 단위 테스트 5개(기본값은 직접 주소, 설정 시 헤더 사용, `X-Forwarded-For` 무시, 잘못된 값이면 직접 주소, 허용하지 않은 헤더 이름은 설정 오류). DB 통합 테스트 1개: 같은 사용자 IP가 41번째에 429가 되어도 다른 IP는 401(제한 안 걸림), `X-Forwarded-For`를 위조해도 429 유지.
+
+Render 반영: 환경변수 `NOURISHON_CLIENT_IP_HEADER=cf-connecting-ip` 추가 후 Manual Deploy.
+
+출처: [Render: How Render handles DDoS attacks](https://render.com/articles/how-render-handles-ddos-attacks), [Render: Host PocketBase on Render(CF-Connecting-IP 권장)](https://render.com/articles/host-pocketbase-on-render), [Render 커뮤니티: X-Forwarded-For 덧붙임](https://community.render.com/t/accessing-client-ips-in-a-node-express-app/36282)

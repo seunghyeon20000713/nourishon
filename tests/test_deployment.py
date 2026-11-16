@@ -64,3 +64,38 @@ class DeploymentTests(unittest.TestCase):
                 self.assertEqual(client.get('/health',headers={'host':'untrusted.example.com'}).status_code,400)
                 response=client.post('/auth/register',json={'username':'practice','password':'abcd'},headers={'Origin':'https://untrusted.example.com','X-NourishOn-Client':'web'})
                 self.assertEqual(response.status_code,403)
+
+
+class ClientIpTests(unittest.TestCase):
+    """로그인 시도 제한용 IP: 설정한 프록시 헤더만 믿고, 위조 가능한 값은 무시한다."""
+    def request(self, header_setting, headers, host='10.0.0.5'):
+        from types import SimpleNamespace
+        from starlette.requests import Request
+        from backend.settings import Settings
+        scope = {'type': 'http', 'method': 'POST', 'path': '/', 'headers': [(k.lower().encode(), v.encode()) for k, v in headers.items()],
+                 'client': (host, 1234), 'app': SimpleNamespace(state=SimpleNamespace(settings=Settings(client_ip_header=header_setting)))}
+        return Request(scope)
+
+    def test_default_uses_direct_connection(self):
+        from backend.accounts import client_ip
+        self.assertEqual(client_ip(self.request(None, {'CF-Connecting-IP': '203.0.113.9', 'X-Forwarded-For': '198.51.100.1'})), '10.0.0.5')
+
+    def test_trusted_header_used_and_forwarded_for_ignored(self):
+        from backend.accounts import client_ip
+        self.assertEqual(client_ip(self.request('cf-connecting-ip', {'CF-Connecting-IP': ' 203.0.113.9 ', 'X-Forwarded-For': '198.51.100.1'})), '203.0.113.9')
+        self.assertEqual(client_ip(self.request('cf-connecting-ip', {'CF-Connecting-IP': '2001:db8::1'})), '2001:db8::1')
+
+    def test_invalid_or_missing_header_falls_back(self):
+        from backend.accounts import client_ip
+        for value in ['', 'not-an-ip', '203.0.113.9, 198.51.100.1']:
+            with self.subTest(value=value):
+                self.assertEqual(client_ip(self.request('cf-connecting-ip', {'CF-Connecting-IP': value})), '10.0.0.5')
+
+    def test_setting_accepts_only_known_header(self):
+        with patch.dict(os.environ, ENV | {'NOURISHON_CLIENT_IP_HEADER': ' CF-Connecting-IP '}, clear=True):
+            self.assertEqual(load_settings().client_ip_header, 'cf-connecting-ip')
+        for bad in ['x-forwarded-for', 'x-real-ip']:
+            with self.subTest(bad=bad), patch.dict(os.environ, ENV | {'NOURISHON_CLIENT_IP_HEADER': bad}, clear=True), self.assertRaises(ValueError):
+                load_settings()
+        with patch.dict(os.environ, ENV, clear=True):
+            self.assertIsNone(load_settings().client_ip_header)

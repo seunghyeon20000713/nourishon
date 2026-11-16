@@ -37,6 +37,9 @@ services:
       # 그 비공개 저장소만, Contents 읽기 전용, 만료일 있는 세분화 토큰. 서버 시작 직전에 환경에서 지웁니다.
       - key: NOURISHON_FOOD_RELEASE_TOKEN
         sync: false
+      # Render 앞단 Cloudflare가 요청마다 덮어쓰는 실제 사용자 IP. 로그인 시도 제한을 사용자별로 분리한다.
+      - key: NOURISHON_CLIENT_IP_HEADER
+        value: cf-connecting-ip
       - key: NOURISHON_FRONTEND_DIST
         value: /opt/render/project/src/frontend/dist
 # DB는 Neon 무료 프로젝트(AWS Singapore, PostgreSQL 18, CI에서 16·18 모두 검증)에 별도로 만듭니다. 소유자 연결을 앱에 자동 주입하지 않습니다.
