@@ -54,6 +54,5 @@ def create_web_app(api=None, frontend_path: Path | None = None):
             raise HTTPException(404)
         return FileResponse(directory/'index.html', headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
     return web
-
-
-app = create_web_app()
+# 모듈을 불러올 때 앱을 만들지 않는다. 실행은 uvicorn --factory backend.web:create_web_app
+# (불러오기만 해도 실제 빌드 폴더·설정을 요구하면 테스트와 도구가 환경에 묶인다)
