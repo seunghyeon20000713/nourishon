@@ -41,7 +41,15 @@ class PrepareStagingDbTests(unittest.TestCase):
     def test_missing_env_exits_nonzero(self):
         import os
         from unittest.mock import patch
-        with patch.dict(os.environ, {}, clear=True):
+        with patch.dict(os.environ, {}, clear=True), patch.object(module.sys.stdin, 'isatty', return_value=False):
+            self.assertEqual(module.main([]), 1)
+
+    def test_masked_password_is_rejected_before_connecting(self):
+        import os
+        from unittest.mock import patch
+        masked = 'postgresql://neondb_owner:********@ep-x.ap-southeast-1.aws.neon.tech/neondb?sslmode=require'
+        with patch.dict(os.environ, {'NOURISHON_MIGRATION_DATABASE_URL': masked}, clear=True), \
+                patch.object(module, 'prepare', side_effect=AssertionError('접속 시도하면 안 됨')):
             self.assertEqual(module.main([]), 1)
 
 

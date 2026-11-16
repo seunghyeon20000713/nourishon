@@ -7,6 +7,7 @@
 앱 연결 문자열로 출력한다. 이 값은 Render 비밀 설정에만 입력하고 채팅·Git·스크린샷에 남기지 않는다.
 """
 import argparse
+import getpass
 import os
 import secrets
 import sys
@@ -115,8 +116,14 @@ def main(argv=None) -> int:
     parser.add_argument('--rotate-password', action='store_true', help='이미 있는 앱 역할의 비밀번호를 새로 만든다')
     args = parser.parse_args(argv)
     owner = os.environ.get('NOURISHON_MIGRATION_DATABASE_URL')
+    if not owner and sys.stdin.isatty():
+        # 화면에 표시하지 않고 입력받는다(명령 기록에도 남지 않음).
+        owner = getpass.getpass('Neon 연결 문자열을 붙여넣고 Enter (화면에 보이지 않는 것이 정상): ').strip()
     if not owner:
         print('NOURISHON_MIGRATION_DATABASE_URL이 필요합니다.', file=sys.stderr)
+        return 1
+    if '*' in owner:
+        print('오류: 비밀번호가 ***로 가려진 채 복사됐습니다. Neon에서 비밀번호 보기를 켠 뒤 복사 아이콘으로 다시 복사하세요.', file=sys.stderr)
         return 1
     try:
         app_dsn = prepare(owner, rotate=args.rotate_password)
