@@ -87,12 +87,12 @@ React 19.3.1, TypeScript 7.0.2, Vite 8.3.6을 사용했습니다. 정확한 버�
 현재 환경에서 브라우저 검증 재실행 명령:
 
 ```bash
-LD_LIBRARY_PATH=/tmp/nourishon-browser-libs/usr/lib/x86_64-linux-gnu \
-PLAYWRIGHT_BROWSERS_PATH=/tmp/nourishon-playwright \
+LD_LIBRARY_PATH=.tools/browser-libs/usr/lib/x86_64-linux-gnu \
+PLAYWRIGHT_BROWSERS_PATH=.tools/playwright \
 bash scripts/frontend.sh test:e2e
 ```
 
-위 /tmp 파일은 이번 환경의 임시 검증 도구입니다. 다른 컴퓨터에서는 Playwright 안내에 따라 Chromium과 해당 운영체제의 브라우저 의존성을 준비한 뒤 `npm run test:e2e`를 실행합니다.
+2026-11-17부터 브라우저와 실행 라이브러리는 재부팅해도 남도록 `.tools/`(Git 제외)에 둡니다. `/tmp`에 두었을 때는 재부팅 후 지워져 실행이 멈췄습니다. 다른 컴퓨터에서는 Playwright 안내에 따라 Chromium과 해당 운영체제의 브라우저 의존성을 준비한 뒤 `npm run test:e2e`를 실행합니다.
 브라우저 검증에는 두 로컬 서버가 실행 중이어야 합니다. 테스트 입력은 공공 식품의 가상 섭취량 또는 가상 식품이며 개인 기록이 아닙니다.
 
 ## 다음 수정

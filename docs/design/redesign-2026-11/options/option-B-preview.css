@@ -1,0 +1,24 @@
+.journal-dashboard{display:flex;flex-direction:column}
+.journal-dashboard>*{order:3}
+.journal-dashboard>.journal-page-heading{order:0}
+.journal-dashboard>details.getting-started[open]{order:1;margin:0 0 28px;padding:22px 24px;background:#eef3ec;border:1px solid #cfdccc;border-radius:14px}
+.top-menu-toggle{display:none!important}
+.profile-tools{display:none!important}
+.site-notice{min-height:40px!important;height:auto!important;font-size:12px!important;padding:8px 16px!important}
+.notice-mode{padding-top:40px!important}
+.notice-mode .journal-rail.sidebar{top:40px!important}
+.body-weight>strong:only-child,.body-empty strong{opacity:.25}
+small,.journal-limitation,.body-metrics+p,.chart-state{color:#56635a!important}
+@media(max-width:700px){
+ .site-notice{font-size:11px!important;padding:6px 12px!important;line-height:1.45!important}
+ .notice-mode{padding-top:52px!important}
+ .notice-mode .journal-rail.sidebar{top:52px!important}
+}
+body,.app-shell{background:#f3f5f1!important}
+.page-content>section,.journal-columns>*,.body-diary-grid>*,.measurement-bottom>*,.panel,.meal-card,.search-card{background:#fff!important;border:1px solid #e1e7df!important;border-radius:18px!important;box-shadow:0 6px 24px #1d3b2c0f!important;padding:24px!important}
+.daily-diary{background:#173f2f!important;color:#fff!important}
+.daily-diary *{color:#fff!important;border-color:#ffffff33!important}
+.daily-diary .diary-shortcut,.daily-diary a,.daily-diary button{background:transparent!important}
+button,.record-primary{border-radius:999px!important}
+p,li,dd,td{font-size:14.5px}
+.journal-page-heading h1{font-size:32px!important}
