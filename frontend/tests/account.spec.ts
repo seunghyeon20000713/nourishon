@@ -94,6 +94,9 @@ test('가입 → DB 기록 → 활동 계획 → 재로그인과 계정 분리',
   await expect(page.getByRole('heading',{name:/아침/})).toBeVisible()
   await page.getByRole('button',{name:'운동 계획',exact:true}).click()
   await expect(page.getByRole('heading',{name:'내 주간 계획 초안'})).toBeVisible()
+  // 계획이 있으면 조건 입력 폼은 접혀 있다(2026-11-17 개선안 B). 펼친 뒤 조건을 바꾼다.
+  await expect(page.getByLabel('질환·부상·통증·의사의 운동 제한',{exact:true})).toBeHidden()
+  await page.getByText('조건을 바꿔 계획 다시 만들기',{exact:true}).click()
   await page.getByLabel('질환·부상·통증·의사의 운동 제한',{exact:true}).selectOption('yes')
   await expect(page.getByText('입력 조건이 변경되어 이전 계획을 숨겼습니다.',{exact:false})).toBeVisible()
   await expect(page.getByRole('heading',{name:'내 주간 계획 초안'})).toHaveCount(0)

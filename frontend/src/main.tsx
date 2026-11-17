@@ -7,6 +7,8 @@ import './fonts'
 import './styles.css'
 import './journal.css'
 import './personal-journal.css'
+import './tokens.css'
+import './exercise.css'
 
 if (import.meta.env.MODE === 'demo') setupDemo()
 // scripts/build-staging.sh가 테스트 서버 빌드에서만 켠다.

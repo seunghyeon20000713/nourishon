@@ -1,0 +1,51 @@
+/*
+ * 디자인 토큰(개선안 B, 2026-11-17)
+ * 화면마다 따로 쓰던 색·모서리·그림자·글자 크기를 이름 붙인 값으로 모은다.
+ * 새 화면은 숫자 대신 이 변수만 사용한다. (예: color: var(--c-text-muted))
+ */
+:root {
+  /* 색 — 본문 대비는 흰 배경 기준 WCAG AA(4.5:1) 이상 */
+  --c-primary: #19573f;        /* 주요 버튼·강조 */
+  --c-primary-hover: #134732;
+  --c-primary-soft: #e8f1ea;   /* 선택된 항목 배경 */
+  --c-text: #1c2722;
+  --c-text-muted: #5b675f;     /* 보조 글자, 흰 배경 대비 약 5.8:1 */
+  --c-border: #dfe5df;
+  --c-border-strong: #b9cdbb;
+  --c-surface: #ffffff;        /* 카드 */
+  --c-surface-sunken: #f5f8f3; /* 카드 안 보조 구역 */
+  --c-bg: #f6f6f1;             /* 페이지 배경 */
+  --c-warn-bg: #fff4e3;
+  --c-warn-text: #7a4d12;
+  --c-danger: #9f3a26;
+  --c-light: #e3f0e6;  --c-light-text: #2c5e3e;   /* 가벼운 강도 */
+  --c-moderate: #fdf0d6; --c-moderate-text: #7a4d12; /* 중간 강도 */
+  --c-vigorous: #fbe3dc; --c-vigorous-text: #8c3420; /* 높은 강도 */
+
+  /* 모서리 3단계 */
+  --r-sm: 8px;   /* 버튼·입력칸 */
+  --r-md: 12px;  /* 카드 안 항목 */
+  --r-lg: 16px;  /* 카드 */
+
+  /* 그림자 2단계 */
+  --shadow-card: 0 1px 2px rgb(22 44 32 / 4%), 0 4px 14px rgb(22 44 32 / 5%);
+  --shadow-pop: 0 8px 28px rgb(22 44 32 / 14%);
+
+  /* 글자 크기 7단계 — 가장 작은 글자는 12px */
+  --fs-xs: 12px;   /* 출처·보조 설명 */
+  --fs-sm: 13px;   /* 라벨 */
+  --fs-md: 14px;   /* 본문 */
+  --fs-lg: 16px;   /* 카드 소제목 */
+  --fs-xl: 20px;   /* 구역 제목 */
+  --fs-2xl: 24px;  /* 화면 제목(모바일) */
+  --fs-3xl: 30px;  /* 화면 제목 */
+
+  /* 터치 영역: 버튼·입력칸 높이 */
+  --control-h: 44px;
+  --control-h-sm: 40px;
+
+  /* 기존 변수와 연결 — 같은 이름이 두 값으로 충돌하던 것을 하나로 맞춘다 */
+  --green: var(--c-primary);
+  --text: var(--c-text);
+  --border: var(--c-border);
+}

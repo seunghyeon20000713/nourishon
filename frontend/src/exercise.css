@@ -1,0 +1,100 @@
+/* 운동 화면(개선안 B): 운동 기록을 먼저, 주간 계획은 아래에. 값은 tokens.css만 사용한다. */
+.exercise-page { line-height: 1.7; }
+.exercise-page .page-head h1 { margin: 0 0 6px; }
+.exercise-page .page-head p { margin: 0; color: var(--c-text-muted); font-size: var(--fs-md); }
+
+/* 운동 기록 */
+.activity-log { margin-top: 24px; padding-top: 0; border-top: 0; }
+.activity-log>h2 { font-size: var(--fs-xl); margin: 0 0 4px; }
+.activity-lead { margin: 0 0 8px; color: var(--c-text-muted); font-size: var(--fs-md); }
+.activity-notes { margin: 0 0 20px; font-size: var(--fs-sm); color: var(--c-text-muted); }
+.activity-notes>summary, .activity-estimate details>summary, .activity-record details>summary { cursor: pointer; color: var(--c-primary); font-weight: 600; font-size: var(--fs-sm); width: fit-content; }
+.activity-notes p { margin: 8px 0; }
+.activity-form>.exercise-fields { display: grid; gap: 16px; }
+.activity-step { border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 18px 20px 16px; margin: 0; min-width: 0; background: var(--c-surface); }
+.activity-step>legend { display: flex; align-items: center; gap: 10px; font-size: var(--fs-lg); font-weight: 700; color: var(--c-text); padding: 0 6px; margin-left: -6px; }
+.activity-step>legend b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--c-primary); color: #fff; font-size: var(--fs-sm); }
+.activity-help { margin: 10px 0 0; font-size: var(--fs-xs); color: var(--c-text-muted); line-height: 1.6; }
+
+/* 1. 운동 종류: 아이콘 버튼 */
+.activity-categories { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 8px; }
+.wellness-panel .activity-categories label, .wellness-panel .activity-options label { margin: 0; }
+.activity-categories label { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px; padding: 10px 8px; border: 1px solid var(--c-border); border-radius: var(--r-md); background: var(--c-surface); color: var(--c-text-muted); font-size: var(--fs-sm); font-weight: 600; text-align: center; line-height: 1.35; cursor: pointer; transition: border-color .15s, background .15s; }
+.activity-categories label:hover { border-color: var(--c-border-strong); }
+.activity-categories label.selected { border-color: var(--c-primary); background: var(--c-primary-soft); color: var(--c-primary); box-shadow: inset 0 0 0 1px var(--c-primary); }
+.activity-categories input, .activity-options input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.activity-categories label:has(input:focus-visible), .activity-options label:has(input:focus-visible) { outline: 3px solid #7aab90; outline-offset: 2px; }
+
+/* 2. 세부 조건: 쉬운 이름 + 조건 + 강도 */
+.activity-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; margin-top: 8px; }
+.activity-options label { position: relative; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 14px; border: 1px solid var(--c-border); border-radius: var(--r-md); background: var(--c-surface); cursor: pointer; transition: border-color .15s, background .15s; }
+.activity-options label:hover { border-color: var(--c-border-strong); }
+.activity-options label.selected { border-color: var(--c-primary); background: var(--c-primary-soft); box-shadow: inset 0 0 0 1px var(--c-primary); }
+.activity-options label::before { content: ''; flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--c-border-strong); background: var(--c-surface); }
+.activity-options label.selected::before { border-color: var(--c-primary); background: radial-gradient(circle, var(--c-primary) 0 4px, var(--c-surface) 5px); }
+.activity-option-text { display: flex; flex-direction: column; min-width: 0; flex: 1; line-height: 1.4; }
+.activity-option-text strong { font-size: var(--fs-md); color: var(--c-text); }
+.activity-option-text small { font-size: var(--fs-xs); color: var(--c-text-muted); margin-top: 2px; }
+.intensity { flex: none; display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: var(--fs-xs); font-weight: 600; line-height: 1.6; white-space: nowrap; }
+.intensity-light { background: var(--c-light); color: var(--c-light-text); }
+.intensity-moderate { background: var(--c-moderate); color: var(--c-moderate-text); }
+.intensity-vigorous { background: var(--c-vigorous); color: var(--c-vigorous-text); }
+
+/* 3. 날짜·시간·나이·체중 */
+.activity-inputs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+.wellness-panel .activity-inputs label { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--c-text); }
+.wellness-panel .activity-inputs input { width: 100%; margin-top: 6px; }
+
+/* 계산 결과 */
+.activity-estimate { margin: 18px 0; padding: 20px; border: 1px solid var(--c-border-strong); border-radius: var(--r-lg); background: var(--c-surface-sunken); }
+.activity-estimate h3 { margin: 0 0 12px; font-size: var(--fs-lg); }
+.kcal-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.kcal-pair>div { padding: 14px 16px; border-radius: var(--r-md); background: var(--c-surface); border: 1px solid var(--c-border); display: flex; flex-direction: column; }
+.kcal-pair span { font-size: var(--fs-sm); color: var(--c-text-muted); font-weight: 600; }
+.kcal-pair strong { font-size: 26px; letter-spacing: -.5px; color: var(--c-primary); line-height: 1.4; }
+.kcal-pair small { font-size: var(--fs-xs); color: var(--c-text-muted); }
+.activity-estimate details { margin: 12px 0; font-size: var(--fs-sm); color: var(--c-text-muted); }
+.activity-estimate details p { margin: 6px 0; }
+
+/* 날짜별 기록 */
+.activity-history { margin-top: 28px; }
+.activity-history-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.activity-history-head h3 { margin: 0; font-size: var(--fs-xl); }
+.wellness-panel .activity-history-head label { margin: 0; font-size: var(--fs-sm); font-weight: 600; }
+.activity-day-total { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
+.activity-day-total span { padding: 4px 12px; border-radius: 999px; background: var(--c-primary-soft); color: var(--c-primary); font-size: var(--fs-sm); font-weight: 600; }
+.activity-log .activity-record { margin: 10px 0; padding: 16px 18px; border: 1px solid var(--c-border); border-radius: var(--r-md); background: var(--c-surface); }
+.activity-record-head { display: flex; align-items: center; gap: 12px; }
+.activity-record-head>div { flex: 1; min-width: 0; }
+.activity-record-head h4 { margin: 0; font-size: var(--fs-lg); line-height: 1.4; }
+.activity-record-head p { margin: 2px 0 0; font-size: var(--fs-sm); color: var(--c-text-muted); }
+.activity-record-head>strong { font-size: var(--fs-xl); color: var(--c-primary); white-space: nowrap; }
+.activity-icon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-md); background: var(--c-primary-soft); color: var(--c-primary); }
+.activity-record details { margin: 8px 0; font-size: var(--fs-sm); color: var(--c-text-muted); }
+.activity-record details p { margin: 4px 0; }
+.activity-empty { margin: 14px 0; padding: 18px; border-radius: var(--r-md); background: var(--c-surface-sunken); color: var(--c-text-muted); font-size: var(--fs-md); }
+.activity-source { font-size: var(--fs-xs); margin-top: 18px; }
+
+/* 기록 화면의 보조 버튼 */
+.activity-log button.primary-action { min-height: var(--control-h); padding: 0 18px; border: 0; border-radius: var(--r-sm); background: var(--c-primary); color: #fff; font-weight: 600; font-size: var(--fs-md); }
+.activity-log button.primary-action:hover { background: var(--c-primary-hover); }
+.activity-log button.quiet-action { min-height: var(--control-h-sm); padding: 0 14px; border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-surface); color: var(--c-text-muted); font-size: var(--fs-sm); }
+.activity-log button.quiet-action:hover { color: var(--c-danger); border-color: var(--c-danger); }
+
+/* 주간 계획 */
+.exercise-plan { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--c-border); }
+.exercise-plan>h2 { margin: 0 0 4px; font-size: var(--fs-xl); }
+.exercise-plan>p { margin: 0 0 12px; color: var(--c-text-muted); font-size: var(--fs-sm); }
+.plan-form { border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 14px 20px; background: var(--c-surface); }
+.plan-form>summary { cursor: pointer; font-weight: 700; color: var(--c-primary); font-size: var(--fs-md); }
+.plan-form[open]>summary { margin-bottom: 14px; }
+
+@media (max-width: 700px) {
+  .activity-categories { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .activity-categories label { min-height: 60px; flex-direction: row; justify-content: flex-start; padding: 10px 12px; text-align: left; }
+  .activity-options { grid-template-columns: 1fr; }
+  .activity-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kcal-pair { grid-template-columns: 1fr; }
+  .activity-step { padding: 16px 14px 14px; }
+  .activity-record-head>strong { font-size: var(--fs-lg); }
+}
