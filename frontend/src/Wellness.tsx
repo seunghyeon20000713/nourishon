@@ -48,7 +48,7 @@ export function Profile({data,onChange}:{data:WellnessData;onChange:(d:WellnessD
   setBusy(true);setError('')
   try{const r=await fetch('/api/profile/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(profile)});if(!r.ok)throw Error();const estimate:Estimate=await r.json();
    const measurement:Measurement={id:crypto.randomUUID(),measured_on:String(f.get('measured_on')),weight_kg:Number(profile.weight_kg)}
-   for(const key of ['skeletal_muscle_kg','fat_mass_kg','body_fat_percent'] as const) if(body[key]!==undefined)measurement[key]=Number(body[key])
+   for(const key of ['skeletal_muscle_kg','fat_mass_kg','body_fat_percent'] as const) if(body[key]!=null)measurement[key]=Number(body[key])
    const history=[...(data.measurements??[])]
    // 이전 버전에서 보관한 체성분 값도 첫 갱신 때 이력으로 남긴다.
    const oldBody=data.profile?.body as Record<string,number|string>|undefined

@@ -15,7 +15,7 @@
 
 ### P0 — 정확성·신뢰 (디자인과 별개로 먼저 고칠 것)
 
-1. **입력하지 않은 체성분이 대시보드에서 `0.0 kg`로 보인다.** 서버는 빈 값을 `null`로 저장하는데, 대시보드는 `undefined`만 "미등록"으로 처리한다. 그래서 `null`이 0.0으로 바뀐다. "결측과 0은 다르다" 원칙 위반이다. 같은 기록을 "기록 관리" 화면은 "미등록"으로 바르게 보여준다. → [desktop-05-dashboard-data.png](before/desktop-05-dashboard-data.png)
+1. ✅ (2026-11-17 수정) **입력하지 않은 체성분이 대시보드에서 `0.0 kg`로 보인다.** 서버는 빈 값을 `null`로 저장하는데, 대시보드는 `undefined`만 "미등록"으로 처리한다. 그래서 `null`이 0.0으로 바뀐다. "결측과 0은 다르다" 원칙 위반이다. 같은 기록을 "기록 관리" 화면은 "미등록"으로 바르게 보여준다. → [desktop-05-dashboard-data.png](before/desktop-05-dashboard-data.png)
 2. **서버 연결 실패가 화면에 드러나지 않는다.** 오류가 나면 로그아웃된 빈 화면처럼 보인다. 오류 문구는 닫혀 있는 계정 패널 안에만 있다. → [desktop-12-offline.png](before/desktop-12-offline.png)
 3. **문구가 배포 상황과 맞지 않는다.** 소개 화면에 "현재는 로컬 개발용 서비스입니다", 바닥글에 "LOCAL DEVELOPMENT", "일반 성인 로컬 MVP"가 남아 있다. → [desktop-01-intro.png](before/desktop-01-intro.png)
 
@@ -55,3 +55,15 @@
 
 - 기존 기능과 테스트를 깨지 않는다(백엔드 unittest, Playwright 브라우저 테스트).
 - 바꾼 화면은 같은 캡처 스크립트로 **전/후**를 이 폴더에 남긴다(`after/`).
+
+## 진행 기록
+
+### 2026-11-17 P0-1 수정: 체성분 null을 "미등록"으로
+
+- 원인: 서버는 입력하지 않은 체성분을 `null`로 돌려준다(Pydantic `model_dump`가 빈 선택값을 `None`으로 저장). 대시보드 `BodyOverview`는 `=== undefined`만 결측으로 봤다. 그래서 `null`이 `number(null)`을 거쳐 `0.0`이 됐다.
+- 수정: `BodyOverview.tsx`(요약·표)와 `Wellness.tsx`(로컬 기록 변환)의 검사를 `== null`로 바꿨다. `== null`은 `undefined`와 `null`을 함께 결측으로 본다. 0은 그대로 숫자로 표시한다.
+- 테스트: `body-dashboard.spec.ts`에 null 체성분 테스트를 추가했다. **수정 전 코드에서 실패하고 수정 후 통과**하는 것을 확인했다.
+- 함께 고친 기존 테스트 3개:
+  - `body-dashboard`·`journal`: 날짜가 2026-11-06으로 고정돼 날짜가 지나며 깨졌다(버튼 이름과 선택 날짜가 '오늘' 기준으로 바뀜). 오늘·지난 날짜를 모두 확인하도록 바꿨다.
+  - `account`: 2026-11-16 회원 탈퇴를 추가하며 계정 패널 안 `summary`가 2개가 돼 실패했다. 당시 브라우저 실행 환경이 멈춰 놓쳤다. 패널 바로 아래 `summary`만 누르도록 고쳤다.
+- 결과(로컬): 브라우저 테스트 27개 통과(API는 테스트 DB에 연결), 백엔드 unittest 통과.

@@ -8,6 +8,8 @@ async function seedJournal(page:import('@playwright/test').Page){
   const meal=(date:string,kind:string,energy:number)=>{const n=totals(energy);return {id:crypto.randomUUID(),date,kind,calculation:{totals:n,foods:[{food_name:'디자인 검증용 가상 식사',intake_g:100,nutrients:Object.fromEntries(Object.entries(n).map(([k,v])=>[k,{unit:v.unit,consumed:v.known_total}]))}]}}}
   localStorage.setItem('nourishon-local-mvp-v1',JSON.stringify({profile:{age:30,height_cm:170,weight_kg:70,equation_sex:'female',activity:'inactive',goal:'maintain',scope_confirmed:true},estimate:{bmi:24.22,maintenance_kcal:2000,protein_reference_g:56,limitations:[],sources:[]},records:[meal('2026-11-02','점심',1600),meal('2026-11-03','점심',1750),meal('2026-11-05','점심',1420),meal(today,'아침',520),meal(today,'점심',980)]}))
  });await page.reload()
+ // 가상 기록의 '오늘'은 2026-11-06으로 고정. 화면은 실제 오늘을 보여주므로 요약 날짜를 맞춘다(날짜가 지나도 깨지지 않게, 2026-11-17).
+ await page.getByLabel('요약 날짜',{exact:true}).fill('2026-11-06')
 }
 
 test('선택 시안의 기록 대시보드·날짜·이동과 모바일',async({page})=>{
@@ -28,6 +30,8 @@ test('선택 시안의 기록 대시보드·날짜·이동과 모바일',async({
  await page.getByRole('button',{name:'판단 근거 보기'}).click()
  await expect(page.getByRole('heading',{name:'영양학적 근거로 식사 돌아보기'})).toBeVisible()
  await page.getByRole('button',{name:'영양 대시보드',exact:true}).click()
+ // 다른 화면에서 돌아오면 대시보드는 실제 오늘 날짜로 시작하므로 가상 기록 날짜로 다시 맞춘다.
+ await page.getByLabel('요약 날짜',{exact:true}).fill('2026-11-06')
  await page.setViewportSize({width:390,height:844})
  await expect(page.getByRole('img',{name:'탄수화물 55%, 참고 범위 50~65%'})).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()

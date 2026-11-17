@@ -34,6 +34,13 @@ test('개인 기록장: 실제 측정·날짜 비교·요약·이동·반응형'
  await page.setViewportSize({width:390,height:844})
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  await page.screenshot({path:'/tmp/nourishon-journal-v2-mobile.png',fullPage:true})
+ // 지난 날짜(2026-11-06)는 '식사 기록 보기' → 기록 관리, 오늘 날짜는 '식사 기록하기' → 식사 기록.
+ // 고정 날짜만 쓰면 날짜가 지나며 버튼 이름이 바뀌어 테스트가 깨지므로 두 경우를 모두 확인한다(2026-11-17 수정).
+ await page.locator('.daily-diary').getByRole('button',{name:'식사 기록 보기',exact:true}).click()
+ await expect(page.getByRole('heading',{name:'식사 기록과 기간 분석'})).toBeVisible()
+ await page.locator('.mobile-bottom-nav button[aria-label="영양 대시보드"]').click()
+ const localToday=await page.evaluate(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})
+ await page.getByLabel('요약 날짜',{exact:true}).fill(localToday)
  await page.locator('.daily-diary').getByRole('button',{name:'식사 기록하기',exact:true}).click()
  await expect(page.getByRole('textbox',{name:'음식 이름'})).toBeVisible()
  expect(errors).toEqual([])
@@ -56,4 +63,20 @@ test('몸 기록: 없는 값과 0 구분, 같은 날짜 마지막 값, 미래 �
  await expect(page.locator('.body-weight')).toContainText('—')
  await expect(page.getByRole('button',{name:'내 몸 정보 입력',exact:true})).toBeVisible()
  await expect(page.locator('.body-recent')).toContainText('등록된 측정값이 없습니다.')
+})
+
+test('체성분 미입력(null)은 0.0이 아니라 미등록으로 표시',async({page})=>{
+ // 서버 저장 기록은 입력하지 않은 체성분을 null로 돌려준다. 결측을 0으로 보이면 안 된다.
+ await page.setViewportSize({width:1440,height:1024})
+ await page.goto('/#dashboard')
+ await page.evaluate(()=>{
+  const rows=[['2026-11-03',62.4],['2026-11-10',61.9]].map(([date,weight])=>({id:crypto.randomUUID(),measured_on:date,weight_kg:weight,skeletal_muscle_kg:null,fat_mass_kg:null,body_fat_percent:null}))
+  localStorage.setItem('nourishon-local-mvp-v1',JSON.stringify({profile:{age:34,height_cm:165,weight_kg:61.9,equation_sex:'female',activity:'inactive',goal:'maintain',scope_confirmed:true},measurements:rows,records:[]}))
+ });await page.reload()
+ await page.getByLabel('요약 날짜',{exact:true}).fill('2026-11-10')
+ await expect(page.locator('.body-weight')).toContainText('61.9')
+ await expect(page.locator('.body-metrics')).toContainText('미등록')
+ await expect(page.locator('.body-metrics')).not.toContainText('0.0')
+ await expect(page.locator('.body-recent tbody')).toContainText('미등록')
+ await expect(page.locator('.body-recent tbody')).not.toContainText('0.0')
 })
