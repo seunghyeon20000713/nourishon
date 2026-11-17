@@ -34,7 +34,7 @@ export default function Introduction() {
       <header className="intro-header"><div className="intro-brand"><a href="#intro" aria-label="N 로고 소개 화면으로 이동"><img src="/brand/nourishon-mark.png" alt=""/></a><a href="#dashboard" aria-label="NourishOn 대시보드로 이동">NourishOn</a></div><a className="intro-start" href="#dashboard">관리 시작하기 <ArrowUpRight size={17}/></a></header>
       <main>
         <section className="intro-hero" aria-labelledby="intro-title">
-          <div className="intro-hero-copy"><p className="intro-kicker">NUTRITION, WITH CONTEXT</p><h1 id="intro-title" tabIndex={-1}>내 몸을 이해하고,<br/>다음 한 끼를<br/><em>더 나답게.</em></h1><p className="intro-lead">숫자를 모으는 데서 한 걸음 더.<br/>몸의 변화와 식사 기록을 함께 살펴보세요.</p><a className="intro-primary" href="#dashboard">내 식사 관리 시작하기 <ArrowUpRight size={20}/></a><p className="intro-local">현재는 로컬 개발용 서비스입니다.</p></div>
+          <div className="intro-hero-copy"><p className="intro-kicker">NUTRITION, WITH CONTEXT</p><h1 id="intro-title" tabIndex={-1}>내 몸을 이해하고,<br/>다음 한 끼를<br/><em>더 나답게.</em></h1><p className="intro-lead">숫자를 모으는 데서 한 걸음 더.<br/>몸의 변화와 식사 기록을 함께 살펴보세요.</p><a className="intro-primary" href="#dashboard">내 식사 관리 시작하기 <ArrowUpRight size={20}/></a><p className="intro-local">개인 포트폴리오 프로젝트입니다 · 진단이나 치료 목적이 아닙니다.</p></div>
           <div className="intro-preview" aria-label="섭취량 환산 연습용 예시"><div className="intro-preview-top"><span>ONE MEAL, IN CONTEXT</span><Utensils size={22}/></div><p>얼마나 먹었는지부터,<br/><strong>정확하게.</strong></p><div className="intro-plate"><span>150<small>g 섭취</small></span></div><div className="intro-example"><span>100g당 200 kcal</span><ArrowDown size={18}/><strong>섭취 열량 300 <small>kcal</small></strong></div><p className="intro-example-note">연습용 수치 · 실제 식품·개인 기록이 아닙니다.</p></div>
           <a className="intro-scroll" href="#intro-process"><ArrowDown size={18}/> 아래로 내려 살펴보세요</a>
         </section>
@@ -48,7 +48,7 @@ export default function Introduction() {
         </section>
         <section className="intro-finish intro-reveal"><p className="intro-kicker">A SMALL STEP, TODAY</p><h2>완벽한 식단보다,<br/>이해할 수 있는 한 끼부터.</h2><p>오늘 먹은 음식 하나를 기록하며 시작해보세요.</p><a className="intro-primary" href="#dashboard">대시보드 열기 <ArrowUpRight size={20}/></a></section>
       </main>
-      <footer className="intro-footer"><strong>NourishOn</strong><p>일반 성인 대상 · 질환 치료식, 임신·수유, 미성년자 관리는 현재 범위에서 제외합니다.</p><span>LOCAL DEVELOPMENT / 영양 관리 포트폴리오</span></footer>
+      <footer className="intro-footer"><strong>NourishOn</strong><p>일반 성인 대상 · 질환 치료식, 임신·수유, 미성년자 관리는 현재 범위에서 제외합니다.</p><span>PORTFOLIO PROJECT / 영양 관리</span></footer>
     </div>
     {visited && <div hidden={intro}><App/></div>}
   </>

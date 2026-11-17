@@ -6,3 +6,12 @@
 .notice-mode .account-tools { top: 100px; }
 @media(max-width:700px) { .notice-mode { padding-top: 108px; } .site-notice { height: 108px; font-size: 11px; padding: 10px 14px; gap: 10px; } .notice-mode .journal-rail.sidebar { top: 108px; } .notice-mode .account-tools { top: 192px; } }
 .site-notice strong { flex: none; }
+
+/* 모바일: 한 줄 요약으로 높이를 줄인다(2026-11-17) */
+@media(max-width:700px) {
+  .notice-mode { --notice-h:40px; padding-top:40px !important }
+  .site-notice { height:40px !important; min-height:40px; padding:0 14px !important; font-size:12px !important }
+  .site-notice .notice-long { display:none }
+  .site-notice .notice-short { display:inline }
+  .notice-mode .account-tools { top:calc(var(--notice-h) + 19px); z-index:55 }
+}

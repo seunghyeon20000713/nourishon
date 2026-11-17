@@ -1,6 +1,11 @@
 import { Check, ArrowUpRight } from 'lucide-react'
 import type { WellnessData } from './Wellness'
 
+/** 시작 3단계를 모두 마쳤는지. 대시보드가 안내 위치(맨 위/아래)를 정할 때 쓴다. */
+export function gettingStartedComplete(data: WellnessData) {
+  return Boolean(data.profile && data.estimate) && data.records.length > 0
+}
+
 export function GettingStarted({ data, onView }: { data: WellnessData; onView: (view: string) => void }) {
   const steps = [
     { title: '내 몸과 목표 입력', done: Boolean(data.profile), view: 'profile', action: '프로필 입력하기', description: '나이·키·체중·활동 수준을 등록하세요. 인바디 값은 선택입니다.' },

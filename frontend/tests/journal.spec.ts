@@ -36,7 +36,8 @@ test('선택 시안의 기록 대시보드·날짜·이동과 모바일',async({
  await expect(page.getByRole('img',{name:'탄수화물 55%, 참고 범위 50~65%'})).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
  await page.screenshot({path:'/tmp/nourishon-journal-mobile.png',fullPage:true})
- await page.getByRole('button',{name:'식사 기록',exact:true}).click()
+ // 모바일은 '+식사 기록' 대신 하단 메뉴 '식사'로 들어간다(2026-11-17 상단 정리).
+ await page.locator('.mobile-bottom-nav').getByRole('button',{name:'식사 분석',exact:true}).click()
  await expect(page.getByRole('textbox',{name:'음식 이름'})).toBeVisible()
  expect(errors).toEqual([])
 })

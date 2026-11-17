@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { goToView } from './ui'
 
 test('최근 기록 연결과 근거·신체 변화·운동 제한·통신 오류', async ({ page }) => {
   await page.goto('/#dashboard')
@@ -35,13 +36,11 @@ test('최근 기록 연결과 근거·신체 변화·운동 제한·통신 오�
   await page.screenshot({path:'/tmp/nourishon-weekly-guidance-mobile.png',fullPage:true})
   await page.evaluate(()=>{const key='nourishon-local-mvp-v1',saved=JSON.parse(localStorage.getItem(key)!);saved.profiles[0].data.exerciseInput.has_symptoms=true;localStorage.setItem(key,JSON.stringify(saved))})
   await page.reload()
-  await page.getByRole('button',{name:'상단 메뉴 펼치기',exact:true}).click()
-  await page.getByRole('button',{name:'생활 개선',exact:true}).click()
+  await goToView(page,'생활 개선')
   await expect(section.locator('[data-guidance=assessment]')).toBeVisible()
   await expect(section.locator('[data-guidance=activity]')).toHaveCount(0)
   await page.route('**/api/nutrition/weekly-guidance',route=>route.fulfill({status:503,json:{}}))
   await page.reload()
-  await page.getByRole('button',{name:'상단 메뉴 펼치기',exact:true}).click()
-  await page.getByRole('button',{name:'생활 개선',exact:true}).click()
+  await goToView(page,'생활 개선')
   await expect(section.getByRole('alert')).toContainText('기존 기록은 바꾸지 않았습니다.')
 })

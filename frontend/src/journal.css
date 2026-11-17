@@ -1567,3 +1567,71 @@ main {
 .account-banner .account-delete form>button[type=submit]:disabled {
   opacity:.6
 }
+
+/* 서버 연결 실패: 모든 화면 맨 위에 표시(2026-11-17) */
+.connection-banner {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:0 0 18px;
+  padding:14px 18px;
+  border:1px solid #e3b9a4;
+  border-radius:12px;
+  background:#fff4ee;
+  color:#7a3b22;
+  font-size:13px;
+  line-height:1.6
+}
+.connection-banner>svg {
+  flex:none
+}
+.connection-banner strong {
+  font-weight:700
+}
+.connection-banner button {
+  flex:none;
+  margin-left:auto;
+  padding:9px 14px;
+  border:1px solid #c98b6f;
+  border-radius:8px;
+  background:#fff;
+  color:#7a3b22;
+  font-size:13px;
+  font-weight:600
+}
+@media(max-width:700px) {
+  .connection-banner {
+    flex-wrap:wrap;
+    font-size:12px
+  }
+  .connection-banner button {
+    margin-left:30px
+  }
+}
+
+/* 상단 정리(2026-11-17, 개선안 A): 메뉴 버튼 하나, 모바일 상단 한 줄 */
+.label-short,.notice-short { display:none }
+@media(min-width:701px) {
+  .top-menu-toggle,.rail-settings { display:none !important }
+  /* 계정 버튼 세로 중앙을 상단 바의 다른 버튼과 맞춤(실측 109 → 98px) */
+  .account-tools { top:19px }
+  .notice-mode .account-tools { top:89px }
+}
+@media(max-width:700px) {
+  .label-long { display:none }
+  .label-short { display:inline }
+  /* 왼쪽 메뉴 영역은 펼쳤을 때만, 상단 바 바로 아래에 목록으로 */
+  .journal-rail.sidebar { display:none }
+  .menu-expanded .journal-rail.sidebar { display:block; position:fixed; top:var(--notice-h,0px); left:0; right:0; height:0; padding:0; border:0; background:none; z-index:60 }
+  .menu-expanded .journal-rail .rail-logo,.menu-expanded .journal-rail .rail-menu-toggle { display:none }
+  .menu-expanded .journal-rail nav { top:58px }
+  /* 상단 바: 서비스 이름 · 기록 설정 · 계정 · 메뉴를 한 줄로, 스크롤해도 위에 고정 */
+  .journal-topbar { position:sticky; top:var(--notice-h,0px); z-index:50; height:58px; padding:9px 14px; align-items:center; flex-wrap:nowrap; gap:8px; background:#f7f7f3 }
+  .journal-wordmark { font-size:21px; line-height:28px }
+  .journal-product,.record-primary { display:none !important }
+  /* 오른쪽 끝 메뉴 버튼(34px) 자리를 비워 겹치지 않게 */
+  .app-shell .profile-tools { position:static; margin:0 44px 0 auto }
+  .profile-tools summary span { display:none }
+  /* 계정 버튼은 상단 바와 함께 고정하고 상단 바보다 앞에 둔다(덮이지 않게) */
+  .account-tools { position:fixed; top:calc(var(--notice-h,0px) + 19px); right:104px; z-index:55 }
+}

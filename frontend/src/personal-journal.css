@@ -129,3 +129,24 @@ body,.app-shell { background: var(--bg); }
  .organized-profile-form .profile-input-section legend { font-size: 18px; }
  .profile-submit-area .calculate-button { width: 100%; }
 }
+
+/* 값이 없을 때 큰 숫자 자리를 작고 흐리게(고장 난 화면처럼 보이지 않게, 2026-11-17) */
+.body-weight.is-empty>strong,.diary-energy.is-empty strong {
+  font-size:34px;
+  color:#a3ab9f;
+  letter-spacing:0
+}
+.body-weight.is-empty>span,.diary-energy.is-empty>span {
+  display:none
+}
+/* 시작 3단계를 맨 위에 둘 때 */
+.journal-dashboard>.journal-page-heading+details.getting-started {
+  margin-top:0;
+  margin-bottom:30px;
+  padding:22px 24px;
+  border:1px solid #cfdccc;
+  border-radius:14px;
+  background:#eef3ec
+}
+/* 작은 보조 안내문 대비 강화(2026-11-17, 개선안 A): 연한 회색(약 3:1) → #5f6b62(약 5:1, AA 기준 4.5:1 이상) */
+.journal-dashboard small,.journal-dashboard .journal-limitation,.journal-dashboard .getting-started-context,.journal-dashboard .getting-started li p,.journal-dashboard .record-section-heading small,.journal-dashboard .body-bmi p,.journal-dashboard .body-bmi small,.journal-dashboard .daily-diary>p,.journal-dashboard .journal-notes p { color:#5f6b62 }
