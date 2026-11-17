@@ -1,3 +1,4 @@
+import { formatWithUnit } from './nutrientFormat'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 export type FoodFocus = 'protein'|'fiber'|'sodium'
@@ -16,7 +17,7 @@ export function FoodComparison({focus,onFocus,onAdd}:{focus:FoodFocus;onFocus:(f
   finally{if(!request.signal.aborted)setBusy(false)}
  }
  function submit(event:FormEvent){event.preventDefault();void search(query)}
- const value=(food:ComparedFood,key:string)=>{const n=food.nutrients[key];return n?.per_100g==null?'정보 없음':`${new Intl.NumberFormat('ko-KR',{maximumFractionDigits:2}).format(n.per_100g)} ${n.unit}`}
+ const value=(food:ComparedFood,key:string)=>{const n=food.nutrients[key];return n?.per_100g==null?'정보 없음':formatWithUnit(n.per_100g,n.unit)}
  if(import.meta.env.MODE==='demo')return <section className="food-comparison"><h2>실제 식품 비교</h2><p>공개 화면 체험판에는 실제 식품 비교 서버가 연결되어 있지 않습니다.</p></section>
  return <section id="food-comparison" className="food-comparison" aria-labelledby="food-comparison-title"><h2 id="food-comparison-title" tabIndex={-1}>다음 식사에 담을 음식 비교</h2>
   <p>바꾸거나 추가하고 싶은 음식 이름으로 검색하세요. 같은 검색어의 결과를 <b>100g당</b> 성분으로 비교합니다. 1회 제공량이나 권장 섭취량이 아닙니다. 담은 뒤 식사 계산 화면에서 실제로 먹은 양(g)으로 바꿔주세요.</p>

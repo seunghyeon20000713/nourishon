@@ -1,3 +1,4 @@
+import { formatWithUnit } from './nutrientFormat'
 import { FoodComparison } from './FoodComparison'
 import type { FoodFocus, ComparedFood } from './FoodComparison'
 import { WeeklyGuidance } from './WeeklyGuidance'
@@ -33,7 +34,7 @@ export function aggregate(records:MealRecord[]) {
 }
 export function Totals({records}:{records:MealRecord[]}) {
  const totals=aggregate(records)
- return <div className="nutrient-grid">{Object.entries(totals).map(([key,n])=><article className="nutrient-card" key={key}><div>{labels[key]}</div><strong>{n.known_total===null?'정보 없음':`${Number(n.known_total.toFixed(2))} ${n.unit}`}</strong><small>{n.status==='complete'?'기록된 값의 합계':`누락 ${n.missing_count}개 · 확인된 값만 합산`}</small></article>)}</div>
+ return <div className="nutrient-grid">{Object.entries(totals).map(([key,n])=><article className="nutrient-card" key={key}><div>{labels[key]}</div><strong>{n.known_total===null?'정보 없음':formatWithUnit(n.known_total,n.unit)}</strong><small>{n.status==='complete'?'기록된 값의 합계':`누락 ${n.missing_count}개 · 확인된 값만 합산`}</small></article>)}</div>
 }
 export function Profile({data,onChange}:{data:WellnessData;onChange:(d:WellnessData)=>void}) {
  const [error,setError]=useState('');const [busy,setBusy]=useState(false)

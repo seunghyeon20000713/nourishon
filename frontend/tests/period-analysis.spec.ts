@@ -14,7 +14,7 @@ test('주·월 경계와 결측·0·부분 기록 평균 및 체성분 변화', 
   await page.getByLabel('조회 날짜', { exact: true }).fill('2024-02-29')
   const section = page.locator('.period-analysis')
   await expect(section).toContainText('2024-02-26 ~ 2024-03-03')
-  await expect(section.locator('.period-summary')).toContainText('166.67 kcal')
+  await expect(section.locator('.period-summary')).toContainText('167 kcal') // 500 ÷ 3일 = 166.67, kcal 정수 표시(2026-11-17)
   await expect(section.getByRole('button', { name: '2024-02-27 상세 기록 보기' })).toContainText('0 kcal')
   await expect(section.getByRole('button', { name: '2024-02-28 상세 기록 보기' })).toContainText('열량 정보 없음')
   await expect(section.getByRole('button', { name: '2024-02-29 상세 기록 보기' })).toContainText('미기록')

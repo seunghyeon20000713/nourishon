@@ -56,7 +56,8 @@ test('러닝·근력 분류 선택과 종목별 계산·기록', async ({ page }
   await expect(form).not.toContainText('mph')
   await form.getByText('근력·맨몸', { exact: true }).click()
   await expect(form.locator('input[name=activity]')).toHaveCount(6)
-  for (const [category, code, kcal] of [['러닝', '12030', '297.5'], ['근력·맨몸', '02056', '105'], ['근력·맨몸', '02054', '122.5']]) {
+  // 계산값 297.5·122.5 kcal는 서버 값 그대로, 화면은 kcal 정수 표시 규칙(nutrientFormat.ts, 2026-11-17)
+  for (const [category, code, kcal] of [['러닝', '12030', '298'], ['근력·맨몸', '02056', '105'], ['근력·맨몸', '02054', '123']]) {
     await form.getByText(category, { exact: true }).click()
     await form.locator(`label:has(input[value="${code}"])`).click()
     await form.getByRole('button', { name: '운동 소모량 계산' }).click()

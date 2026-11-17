@@ -1,3 +1,4 @@
+import { formatAmount } from './nutrientFormat'
 import { Account } from './Account'
 import type { Session } from './Account'
 import { useServerProfiles } from './serverProfiles'
@@ -229,7 +230,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
           const nutrient = calculation?.totals[key]
           return <article key={key} className={`nutrient-card ${key === 'energy' ? 'energy-card' : ''}`}>
             <div className="nutrient-label">{key === 'energy' && <Flame size={15} />}{label}</div>
-            <div className={`nutrient-value ${nutrient?.known_total === null ? 'unknown' : ''}`}>{!nutrient ? '—' : nutrient.known_total === null ? '정보 없음' : <>{format(nutrient.known_total)} <small>{nutrient.unit}</small></>}</div>
+            <div className={`nutrient-value ${nutrient?.known_total === null ? 'unknown' : ''}`}>{!nutrient ? '—' : nutrient.known_total === null ? '정보 없음' : <>{formatAmount(nutrient.known_total, nutrient.unit)} <small>{nutrient.unit}</small></>}</div>
             <span className="nutrient-note">{!nutrient ? '계산 전' : nutrient.status === 'missing' ? `누락 ${nutrient.missing_count}개` : nutrient.status === 'partial' ? `확인된 값의 합계 · 누락 ${nutrient.missing_count}개` : '입력한 섭취량 기준'}</span>
           </article>
         })}</div>

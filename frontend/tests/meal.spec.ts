@@ -16,7 +16,7 @@ test('실제 검색 → 추가 → 150g 계산 → 변경 시 결과 초기화 �
   await page.getByRole('button', { name: '국밥_돼지머리 추가', exact: true }).click()
   await page.getByRole('spinbutton', { name: '국밥_돼지머리 섭취량' }).fill('150')
   await page.getByRole('button', { name: '영양 합계 계산' }).click()
-  await expect(page.locator('.energy-card .nutrient-value')).toHaveText('205.5 kcal')
+  await expect(page.locator('.energy-card .nutrient-value')).toHaveText('206 kcal') // 계산값 205.5, kcal 정수 표시(2026-11-17)
   await page.screenshot({ path: '/tmp/nourishon-desktop.png', fullPage: true })
   await page.getByRole('spinbutton', { name: '국밥_돼지머리 섭취량' }).fill('200')
   await expect(page.locator('.energy-card .nutrient-value')).toHaveText('—')
