@@ -39,3 +39,8 @@
 - Render 무료 서버(0.1 CPU)에서 검색 1회에 약 1.4~1.8초(네트워크 제외, 3회씩 측정). 로컬은 약 0.1초.
 - 원인: 검색마다 SQLite 임시 파일 290,871행을 `instr`로 모두 훑는다.
 - 검토: SQLite FTS5(전문 검색 색인)의 trigram 토크나이저로 부분 일치 색인 → 메모리·디스크 증가와 순위 규칙 유지 여부를 측정한 뒤 결정. 검색어 입력 중 요청 취소(이미 구현)와 최소 글자 수 안내도 함께 검토.
+
+## 5. Gemini 연결을 Interactions API로 옮기기 (2026-11-17 기록)
+
+- 현재는 `generateContent`(공식 문서상 계속 지원, "legacy")를 쓴다. Google은 새 개발에 Interactions API를 권장한다.
+- 제공자 분리 구조라 `GeminiProvider`만 바꾸면 된다. 바꿀 때 thoughtSignature·호출 id 처리와 외부 전송 내용 테스트를 함께 옮긴다.

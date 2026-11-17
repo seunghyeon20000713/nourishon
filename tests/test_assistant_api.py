@@ -122,6 +122,17 @@ class AssistantApiTests(unittest.TestCase):
             row = conn.execute('SELECT u.fallbacks FROM assistant_usage u JOIN profiles p ON p.user_id=u.user_id WHERE p.id=%s', (profile['id'],)).fetchone()
         self.assertEqual(row['fallbacks'], 2)
 
+    def test_gemini_mode_without_key_shows_notice_and_falls_back(self):
+        # 키가 없거나(설정 실수) 무료 사용량을 넘으면 가짜 AI로 답하고 안내한다. 화면 안내는 Google 전송 문구.
+        self.app.state.assistant = AssistantConfig(provider='gemini', api_key=None, daily_limit=3, service_daily_limit=1000)
+        _, csrf, profile = self.signup(self.client)
+        status = self.client.get('/assistant/status').json()
+        self.assertEqual(status['provider'], 'gemini')
+        for words in ('Google', '서비스 개선', '실제 건강정보', '이름'):
+            self.assertIn(words, status['notice'])
+        body = self.ask(self.client, csrf, profile['id'], '오늘 열량은?').json()
+        self.assertEqual((body['provider'], body['notice']), ('fake', FALLBACK_NOTICE))
+
     def test_external_request_has_no_identifiers(self):
         name, csrf, profile = self.signup(self.client)
         sent = []

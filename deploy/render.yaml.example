@@ -42,5 +42,12 @@ services:
         value: cf-connecting-ip
       - key: NOURISHON_FRONTEND_DIST
         value: /opt/render/project/src/frontend/dist
+      # 건강 비서 AI 제공자: fake(기본, 외부 전송 없음) / gemini(무료 등급, docs/ai-assistant-gemini.md 위험 확인 후)
+      - key: NOURISHON_AI_PROVIDER
+        value: fake
+      - key: NOURISHON_GEMINI_API_KEY
+        sync: false
+      - key: NOURISHON_GEMINI_MODEL
+        value: gemini-3.1-flash-lite
 # DB는 Neon 무료 프로젝트(AWS Singapore, PostgreSQL 18, CI에서 16·18 모두 검증)에 별도로 만듭니다. 소유자 연결을 앱에 자동 주입하지 않습니다.
 # 마이그레이션과 제한된 앱 역할 준비 후 위 앱 연결을 입력해야 합니다.

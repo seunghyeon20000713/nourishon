@@ -172,7 +172,8 @@ class GeminiProvider:
         for _ in range(self.max_rounds + 1):
             data = self.post(url, self.request_body(contents, today), headers, self.timeout)
             try:
-                parts = data['candidates'][0]['content']['parts']
+                content = data['candidates'][0]['content']
+                parts = content['parts']
             except (KeyError, IndexError, TypeError):
                 raise ProviderError('bad_response') from None
             function_calls = [part['functionCall'] for part in parts if isinstance(part, dict) and 'functionCall' in part]
@@ -183,7 +184,8 @@ class GeminiProvider:
                 return Reply(text, self.name, calls)
             if len(calls) + len(function_calls) > 6:
                 raise ProviderError('too_many_calls')
-            contents.append({'role': 'model', 'parts': [{'functionCall': call} for call in function_calls]})
+            # Gemini 3은 함수 호출 부분에 thoughtSignature를 붙인다. 받은 모델 응답을 그대로 다시 보내야 4xx 오류가 나지 않는다(공식 문서).
+            contents.append({'role': 'model', 'parts': parts})
             responses = []
             for call in function_calls:
                 name, args = call.get('name'), call.get('args') or {}
@@ -192,7 +194,10 @@ class GeminiProvider:
                 except ToolError as error:
                     result = {'error': str(error)}
                 calls.append({'name': name, 'args': args, 'result': result})
-                responses.append({'functionResponse': {'name': name, 'response': result}})
+                response = {'name': name, 'response': result}
+                if call.get('id'):
+                    response['id'] = call['id']   # Gemini 3은 호출마다 id를 주고, 결과에 같은 id를 요구한다
+                responses.append({'functionResponse': response})
             contents.append({'role': 'user', 'parts': responses})
         raise ProviderError('too_many_rounds')
 

@@ -128,7 +128,7 @@ class GeminiProviderTests(unittest.TestCase):
         def post(url, body, headers, timeout):
             sent.append((url, body, headers))
             if len(sent) == 1:
-                return {'candidates': [{'content': {'parts': [{'functionCall': {'name': 'get_period_nutrition', 'args': {'start': '2026-11-16', 'end': '2026-11-18'}}}]}}]}
+                return {'candidates': [{'content': {'role': 'model', 'parts': [{'functionCall': {'id': 'call-1', 'name': 'get_period_nutrition', 'args': {'start': '2026-11-16', 'end': '2026-11-18'}}, 'thoughtSignature': 'sig-A'}]}}]}
             return {'candidates': [{'content': {'parts': [{'text': '이번 주 3일 중 2일 기록, 나트륨 합계는 2,800mg이에요.'}]}}]}
 
         provider = GeminiProvider('test-key-not-real', 'gemini-test', post=post)
@@ -138,6 +138,10 @@ class GeminiProviderTests(unittest.TestCase):
         url, body, headers = sent[1]
         self.assertNotIn('test-key-not-real', url)                 # 키는 URL이 아니라 헤더로
         self.assertEqual(headers['x-goog-api-key'], 'test-key-not-real')
+        # 모델의 함수 호출 부분(thoughtSignature 포함)을 그대로 돌려보내고, 결과에 같은 id를 붙인다.
+        self.assertEqual(body['contents'][1]['parts'][0]['thoughtSignature'], 'sig-A')
+        self.assertEqual(body['contents'][2]['role'], 'user')
+        self.assertEqual(body['contents'][2]['parts'][0]['functionResponse']['id'], 'call-1')
         text = json.dumps(body, ensure_ascii=False)
         for secret in (SECRET_FOOD, '연습 국밥', '연습 샐러드'):
             self.assertNotIn(secret, text)
