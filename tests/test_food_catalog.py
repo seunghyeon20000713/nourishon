@@ -34,7 +34,7 @@ class DiskCatalogTests(unittest.TestCase):
             for catalog in [self.catalog,self.reference]:
                 with self.assertRaises(ValueError):catalog.search(query,0,2)
                 with self.assertRaises(ValueError):catalog.compare(query,'protein',0,2)
-        for query in ['두부',' abc  연습 ','없음','%','ＡＢＣ','두 부','연습 두부']:
+        for query in ['두부',' abc  연습 ','없음','%','ＡＢＣ','두 부','연습 두부','연습']:
             for offset in [0,1,3,99]:
                 self.assertEqual(self.catalog.search(query,offset,2),self.reference.search(query,offset,2))
                 for focus in ['protein','fiber','sodium']:

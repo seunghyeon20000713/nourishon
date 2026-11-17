@@ -17,7 +17,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from backend.food_search import match_key, matches_terms, query_terms, search_rank
+from backend.food_search import match_key, matches_terms, query_terms, search_rank, segment_key
 from backend.food_comparison import compare_foods
 from backend.food_catalog import DiskFoodCatalog
 from backend.meal import calculate_meal
@@ -65,12 +65,14 @@ class FoodCatalog:
         self.rows = rows
         self.by_code = {}
         self.names = []
+        self.segments = []
         for index, row in enumerate(rows, 1):
             code = row["FOOD_CD"]
             if not code or code in self.by_code or row["NUT_CON_SRTR_QUA"] != "100g":
                 raise ValueError("식품코드 또는 기준량이 잘못됐습니다.")
             self.by_code[code] = (index, row)
             self.names.append(match_key(row["FOOD_NM"]))
+            self.segments.append(segment_key(row["FOOD_NM"]))
 
     @property
     def count(self):
@@ -84,7 +86,7 @@ class FoodCatalog:
         if not terms:
             raise ValueError("검색어를 입력해주세요.")
         # 일치하는 것만 모은 뒤 순위대로 정렬한다(같은 순위는 원본 순서 유지).
-        found = sorted((search_rank(terms, name, row["FOOD_CD"]), index)
+        found = sorted((search_rank(terms, name, row["FOOD_CD"], self.segments[index]), index)
                        for index, (row, name) in enumerate(zip(self.rows, self.names))
                        if matches_terms(terms, name))
         items = []

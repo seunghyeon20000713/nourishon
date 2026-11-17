@@ -6,7 +6,7 @@ from contextlib import closing
 from itertools import tee
 from pathlib import Path
 
-from backend.food_search import match_key, query_terms
+from backend.food_search import match_key, query_terms, segment_key
 from backend.food_comparison import compare_foods
 from backend.meal import calculate_meal
 
@@ -73,15 +73,15 @@ class DiskFoodCatalog:
         try:
             with closing(sqlite3.connect(self.path)) as connection:
                 connection.execute('PRAGMA cache_size=-2048')
-                connection.execute('CREATE TABLE foods (position INTEGER PRIMARY KEY, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, kind INTEGER NOT NULL, payload TEXT NOT NULL)')
+                connection.execute('CREATE TABLE foods (position INTEGER PRIMARY KEY, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, segments TEXT NOT NULL, kind INTEGER NOT NULL, payload TEXT NOT NULL)')
                 with connection:
                     for index, row in enumerate(iter_food_rows(path), 1):
                         code = row['FOOD_CD']
                         if not isinstance(code, str) or not code or row['NUT_CON_SRTR_QUA'] != '100g':
                             raise ValueError('식품코드 또는 기준량이 잘못됐습니다.')
                         # name은 띄어쓰기·구분자를 뺀 비교용 키, kind는 음식(D)0·원재료(R)1·가공식품2 (backend.food_search.search_rank와 같은 규칙)
-                        connection.execute('INSERT INTO foods VALUES (?,?,?,?,?)',
-                                           (index, code, match_key(row['FOOD_NM']), {'D':0,'R':1}.get(code[:1],2), json.dumps(row, ensure_ascii=False, allow_nan=False)))
+                        connection.execute('INSERT INTO foods VALUES (?,?,?,?,?,?)',
+                                           (index, code, match_key(row['FOOD_NM']), segment_key(row['FOOD_NM']), {'D':0,'R':1}.get(code[:1],2), json.dumps(row, ensure_ascii=False, allow_nan=False)))
                         self.count = index
                 if not self.count or self.count != expected_count:
                     raise ValueError('식품 개수가 완료 보고서와 다릅니다.')
@@ -116,11 +116,11 @@ class DiskFoodCatalog:
         where = self._where(terms)
         with closing(self._connect()) as connection:
             total = connection.execute(f'SELECT count(*) FROM foods WHERE {where}', terms).fetchone()[0]
-            # 순서: 이름이 같음 → 검색어로 시작 → 포함, 같은 단계는 음식→원재료→가공식품, 짧은 이름, 원본 순서
+            # 순서: 이름이 같음 → 검색어로 시작 → 밑줄 뒤 부분이 검색어로 시작 → 포함, 같은 단계는 음식→원재료→가공식품, 짧은 이름, 원본 순서
             selected = connection.execute(
                 f'SELECT payload FROM foods WHERE {where} '
-                'ORDER BY CASE WHEN name=? THEN 0 WHEN substr(name,1,length(?))=? THEN 1 ELSE 2 END, kind, length(name), position '
-                'LIMIT ? OFFSET ?', (*terms, joined, joined, joined, limit, offset))
+                'ORDER BY CASE WHEN name=? THEN 0 WHEN substr(name,1,length(?))=? THEN 1 WHEN instr(segments,?)>0 THEN 2 ELSE 3 END, kind, length(name), position '
+                'LIMIT ? OFFSET ?', (*terms, joined, joined, joined, '|' + joined, limit, offset))
             items = []
             for (payload,) in selected:
                 row = json.loads(payload)

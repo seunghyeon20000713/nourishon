@@ -28,10 +28,18 @@ def matches_terms(terms: list[str], key: str) -> bool:
     return all(term in key for term in terms)
 
 
-def search_rank(terms: list[str], key: str, food_code: str) -> tuple[int, int, int]:
-    """보여줄 순서: 이름이 같음 → 검색어로 시작 → 포함, 같은 단계는 음식(D) → 원재료(R) → 가공식품(P), 짧은 이름 먼저."""
+def segment_key(name: str) -> str:
+    """밑줄 뒤 부분의 비교용 키. 예: '도넛_우유 도넛' → '|우유도넛'. 밑줄이 없으면 빈 문자열."""
+    parts = name.split("_")[1:]
+    return "".join("|" + match_key(part) for part in parts)
+
+
+def search_rank(terms: list[str], key: str, food_code: str, segments: str = "") -> tuple[int, int, int]:
+    """보여줄 순서: 이름이 같음 → 검색어로 시작 → 밑줄 뒤 부분이 검색어로 시작 → 포함.
+    같은 단계는 음식(D) → 원재료(R) → 가공식품(P), 짧은 이름 먼저.
+    밑줄 뒤 부분을 '검색어로 시작'과 같은 단계로 두면 '도넛_우유 도넛'이 '우유, 저지방우유'보다 앞서서(실측) 한 단계 뒤에 둔다(2026-11-17)."""
     joined = "".join(terms)
-    tier = 0 if key == joined else 1 if key.startswith(joined) else 2
+    tier = 0 if key == joined else 1 if key.startswith(joined) else 2 if "|" + joined in segments else 3
     kind = {"D": 0, "R": 1}.get(food_code[:1], 2)
     return tier, kind, len(key)
 

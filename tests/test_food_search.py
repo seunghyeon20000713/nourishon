@@ -76,3 +76,13 @@ class FoodCatalogRankTests(unittest.TestCase):
         page = FoodCatalog(rows).search("연습과일", 1, 2)
         self.assertEqual([item["food_code"] for item in page["items"]], ["R-1", "P-2"])
 
+    def test_part_after_underscore_ranks_after_real_prefix(self):
+        # '분류_이름' 형태: 밑줄 뒤가 검색어로 시작하면 '포함'보다 앞, '검색어로 시작'보다는 뒤(2026-11-17)
+        rows = [
+            {"FOOD_CD": "D-9", "FOOD_NM": "연습빵_연습우유 빵", "NUT_CON_SRTR_QUA": "100g", "SRC_NM": None, "CRTR_YMD": None},
+            {"FOOD_CD": "D-8", "FOOD_NM": "딸기연습우유", "NUT_CON_SRTR_QUA": "100g", "SRC_NM": None, "CRTR_YMD": None},
+            {"FOOD_CD": "R-2", "FOOD_NM": "연습우유, 저지방", "NUT_CON_SRTR_QUA": "100g", "SRC_NM": None, "CRTR_YMD": None},
+        ]
+        result = FoodCatalog(rows).search("연습우유", 0, 10)
+        self.assertEqual([item["food_code"] for item in result["items"]], ["R-2", "D-9", "D-8"])
+
