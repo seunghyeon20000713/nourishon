@@ -1,0 +1,111 @@
+/*
+ * 개선안 B — 카드형 공통 규칙 (2026-11-17)
+ * tokens.css의 값만 사용한다. 기존 클래스 이름과 문구는 바꾸지 않고, 겉모양만 한 규칙으로 맞춘다.
+ * 이 파일은 가장 마지막에 불러와 앞선 화면별 규칙보다 우선한다.
+ */
+
+/* 1. 바탕과 기본 글자 */
+:root { --muted: var(--c-text-muted); }
+body, .app-shell { background: var(--c-bg); color: var(--c-text); }
+.journal-topbar, .journal-rail.sidebar { background: var(--c-surface); }
+
+/* 2. 카드: 흰 바탕 + 같은 모서리·그림자·테두리 */
+.panel, .wellness-panel,
+.journal-dashboard .body-overview,
+.journal-dashboard .body-recent,
+.journal-dashboard .body-bmi,
+.journal-dashboard .journal-analysis,
+.journal-dashboard .journal-notes,
+.journal-dashboard .getting-started {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+.journal-dashboard .body-overview,
+.journal-dashboard .body-recent,
+.journal-dashboard .body-bmi,
+.journal-dashboard .journal-analysis,
+.journal-dashboard .journal-notes { padding: 24px; }
+.journal-dashboard .getting-started { padding: 16px 24px; margin: 0 0 20px; }
+.journal-dashboard .daily-diary { border-radius: var(--r-lg); box-shadow: var(--shadow-card); }
+
+/* 카드로 나뉘었으니 구역 사이의 선은 지우고 간격으로 구분한다 */
+.journal-dashboard .body-diary-grid { gap: 20px; }
+.journal-dashboard .measurement-bottom { border-top: 0; margin-top: 20px; padding-top: 0; gap: 20px; margin-bottom: 20px; }
+.journal-dashboard .body-bmi { border-left: 1px solid var(--c-border); }
+.journal-dashboard .journal-columns { border-top: 0; padding-top: 0; gap: 20px; }
+.journal-dashboard .journal-notes { border-left: 1px solid var(--c-border); }
+
+/* 3. 제목 크기 단계 */
+.journal-dashboard .record-section-heading h2,
+.journal-dashboard .journal-section-heading h2,
+.journal-dashboard .journal-notes>h2,
+.journal-dashboard .body-bmi h2 { font-size: var(--fs-xl); }
+.wellness-panel h1 { font-size: var(--fs-3xl); letter-spacing: -1px; }
+.wellness-panel h2 { font-size: var(--fs-xl); }
+.wellness-panel h3 { font-size: var(--fs-lg); }
+
+/* 4. 입력칸: 같은 높이·모서리·테두리 */
+.wellness-panel input:not([type=checkbox]):not([type=radio]),
+.wellness-panel select,
+.account-banner input,
+.profile-switcher input, .profile-switcher select {
+  min-height: var(--control-h);
+  padding: 0 12px;
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--r-sm);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: var(--fs-md);
+}
+.wellness-panel input:not([type=checkbox]):not([type=radio]):hover,
+.wellness-panel select:hover { border-color: var(--c-primary); }
+.wellness-panel label { font-size: var(--fs-sm); }
+
+/* 5. 버튼 3종: 주요(채움) / 보조(테두리) / 글자 */
+.calculate-button {
+  min-height: var(--control-h);
+  border-radius: var(--r-sm);
+  background: var(--c-primary);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.calculate-button:not(:disabled):hover { background: var(--c-primary-hover); }
+.record button, .week-grid button, .account-banner button {
+  min-height: var(--control-h-sm);
+  padding: 0 14px;
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--r-sm);
+  background: var(--c-surface);
+  color: var(--c-primary);
+  font-size: var(--fs-sm);
+}
+.record button:hover, .week-grid button:hover, .account-banner button:hover { background: var(--c-primary-soft); }
+
+/* 6. 표 */
+.measurement-table th, .measurement-table td { font-size: var(--fs-sm); }
+
+/* 7. 모바일: 카드 안쪽 여백만 줄인다 */
+@media (max-width: 850px) {
+  .journal-dashboard .body-bmi { border-left: 1px solid var(--c-border); padding-left: 24px; }
+  .journal-dashboard .journal-notes { border-left: 1px solid var(--c-border); border-top: 1px solid var(--c-border); padding: 24px; }
+}
+@media (max-width: 700px) {
+  .journal-dashboard .body-overview,
+  .journal-dashboard .body-recent,
+  .journal-dashboard .body-bmi,
+  .journal-dashboard .journal-analysis,
+  .journal-dashboard .journal-notes { padding: 18px 16px; }
+  .journal-dashboard .body-bmi { padding-left: 16px; }
+  .journal-dashboard .getting-started { padding: 14px 16px; }
+  .wellness-panel h1 { font-size: var(--fs-2xl); }
+}
+
+/* 8. 위아래 카드의 좌우 비율과 윗선을 맞춘다 */
+@media (min-width: 851px) {
+  .journal-dashboard .measurement-bottom { grid-template-columns: minmax(0,1.65fr) minmax(280px,1fr); }
+}
+.journal-dashboard .journal-columns { align-items: start; }
+.journal-dashboard .journal-notes { margin-top: 0; align-self: start; }
+.journal-dashboard .journal-columns>.journal-analysis>.journal-summary { padding-top: 0; }

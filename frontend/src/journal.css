@@ -210,21 +210,21 @@ main {
   font-size:12px
 }
 .profile-switcher button {
-  font-size:11px;
+  font-size:12px;
   padding:10px
 }
 .profile-switcher small {
-  font-size:11px;
+  font-size:12px;
   line-height:1.8
 }
 .profile-popup .storage-panel {
   background:#f4f7f0;
   padding:14px;
   margin:16px 0 0;
-  font-size:11px
+  font-size:12px
 }
 .profile-popup .storage-panel p {
-  font-size:11px
+  font-size:12px
 }
 .account-tools {
   position:absolute;
@@ -287,14 +287,14 @@ main {
   color:#fff
 }
 .account-banner small {
-  font-size:11px
+  font-size:12px
 }
 .page-content {
   padding:24px 34px 0
 }
 .save-indicator {
   color:#718077;
-  font-size:11px;
+  font-size:12px;
   margin:0 0 8px;
   text-align:right
 }
@@ -381,7 +381,7 @@ main {
   margin:0 5px
 }
 .journal-summary small {
-  font-size:10px;
+  font-size:12px;
   color:#a07139
 }
 .journal-columns {
@@ -406,7 +406,7 @@ main {
   line-height:1.5
 }
 .journal-section-heading>span {
-  font-size:11px;
+  font-size:12px;
   color:#8a928c;
   line-height:1.7
 }
@@ -451,7 +451,7 @@ main {
   white-space:nowrap
 }
 .chart-state {
-  font-size:11px;
+  font-size:12px;
   color:#7d877e;
   line-height:1.8;
   display:flex;
@@ -473,7 +473,7 @@ main {
   height:225px
 }
 .weekly-chart>small {
-  font-size:11px;
+  font-size:12px;
   color:#7d877e
 }
 .week-labels {
@@ -505,7 +505,7 @@ main {
   position:absolute;
   bottom:58px;
   white-space:nowrap;
-  font-size:10px;
+  font-size:12px;
   color:#9ca49d
 }
 .week-labels button.selected {
@@ -538,7 +538,7 @@ main {
   padding:3px 0;
   background:none;
   border:0;
-  font-size:11px;
+  font-size:12px;
   white-space:nowrap
 }
 .diary-strip button b {
@@ -611,7 +611,7 @@ main {
   flex-wrap:wrap
 }
 .sodium-note>small {
-  font-size:10px;
+  font-size:12px;
   color:#8c968d
 }
 .sodium-note>strong {
@@ -627,7 +627,7 @@ main {
   display:block;
   width:100%;
   color:#ad793d;
-  font-size:10px
+  font-size:12px
 }
 .evidence-link {
   margin:24px 0;
@@ -642,17 +642,17 @@ main {
   font-weight:650
 }
 .journal-notes .journal-limitation {
-  font-size:10px;
+  font-size:12px;
   color:#929b93
 }
 .page-footer {
   margin:32px 34px 0;
   padding:16px 0 20px;
-  font-size:10px;
+  font-size:12px;
   color:#98a196
 }
 .page-footer span:first-child {
-  font-size:10px
+  font-size:12px
 }
 .hero {
   padding:14px 0 25px;
@@ -668,11 +668,11 @@ main {
   color:#778578
 }
 .eyebrow {
-  font-size:10px;
+  font-size:12px;
   color:#87968b
 }
 .connection {
-  font-size:11px
+  font-size:12px
 }
 .steps {
   margin:0 0 20px;
@@ -703,19 +703,19 @@ main {
   font-size:14px
 }
 .food-info>span {
-  font-size:10px
+  font-size:12px
 }
 .food-row {
   padding:16px 0
 }
 .results-heading {
-  font-size:11px
+  font-size:12px
 }
 .suggestions {
-  font-size:11px
+  font-size:12px
 }
 .suggestions button,.suggestions>span {
-  font-size:11px
+  font-size:12px
 }
 .meal-header h2 {
   font-size:21px
@@ -724,7 +724,7 @@ main {
   font-size:14px
 }
 .meal-description,.privacy-note,.panel-footnote {
-  font-size:11px
+  font-size:12px
 }
 .calculate-button {
   font-size:13px
@@ -733,7 +733,7 @@ main {
   font-size:23px
 }
 .analysis-heading>span {
-  font-size:11px
+  font-size:12px
 }
 .nutrient-grid {
   gap:13px
@@ -745,7 +745,7 @@ main {
   font-size:12px
 }
 .nutrient-note {
-  font-size:10px
+  font-size:12px
 }
 .nutrient-value {
   font-size:29px;
@@ -865,13 +865,13 @@ main {
     font-size:16px
   }
   .macro-reference>span {
-    font-size:10px
+    font-size:12px
   }
   .journal-section-heading h2 {
     font-size:18px
   }
   .journal-section-heading>span {
-    font-size:10px
+    font-size:12px
   }
   .journal-notes h3 {
     font-size:14px
@@ -987,7 +987,7 @@ main {
     padding:0;
     background:none;
     color:inherit;
-    font-size:8px;
+    font-size:12px;
     line-height:1.5;
     white-space:nowrap
   }
@@ -1009,7 +1009,7 @@ main {
     line-height:28px
   }
   .record-primary {
-    font-size:11px;
+    font-size:12px;
     padding:8px 11px;
     position:absolute;
     bottom:14px;
@@ -1026,7 +1026,7 @@ main {
     margin:0
   }
   .profile-tools summary {
-    font-size:11px
+    font-size:12px
   }
   .profile-popup {
     top:28px;
@@ -1039,7 +1039,7 @@ main {
     z-index:40
   }
   .account-tools>summary {
-    font-size:11px;
+    font-size:12px;
     max-width:150px
   }
   .account-tools .account-banner {
@@ -1071,7 +1071,7 @@ main {
   .journal-summary {
     gap:10px;
     padding:19px 0 24px;
-    font-size:11px;
+    font-size:12px;
     line-height:1.9
   }
   .journal-summary>span+span {
@@ -1093,7 +1093,7 @@ main {
     font-size:19px
   }
   .journal-section-heading>span {
-    font-size:10px
+    font-size:12px
   }
   .macro-row {
     grid-template-columns:66px minmax(0,1fr) 70px;
@@ -1110,13 +1110,13 @@ main {
     padding-left:8px
   }
   .macro-reference>span {
-    font-size:10px
+    font-size:12px
   }
   .macro-reference strong {
     font-size:13px
   }
   .macro-plot .recharts-cartesian-axis-tick-value {
-    font-size:9px
+    font-size:12px
   }
   .week-section {
     padding-top:23px
@@ -1129,11 +1129,11 @@ main {
     gap:2px
   }
   .week-labels button {
-    font-size:11px;
+    font-size:12px;
     padding:4px 1px
   }
   .week-labels button small {
-    font-size:8px
+    font-size:12px
   }
   .diary-strip {
     gap:12px;
@@ -1143,7 +1143,7 @@ main {
     width:100%
   }
   .diary-strip button {
-    font-size:11px
+    font-size:12px
   }
   .journal-notes ol {
     grid-template-columns:1fr;
@@ -1160,7 +1160,7 @@ main {
     margin-bottom:22px
   }
   .journal-notes .journal-limitation {
-    font-size:11px
+    font-size:12px
   }
   .page-footer {
     margin:24px 18px 0;
@@ -1178,10 +1178,10 @@ main {
     max-width:none
   }
   .connection {
-    font-size:10px
+    font-size:12px
   }
   .steps span {
-    font-size:10px
+    font-size:12px
   }
   .workspace {
     grid-template-columns:1fr
@@ -1190,7 +1190,7 @@ main {
     font-size:12px
   }
   .food-info>span {
-    font-size:9px
+    font-size:12px
   }
   .food-row {
     gap:8px
@@ -1203,19 +1203,19 @@ main {
     gap:7px
   }
   .suggestions>span,.suggestions button {
-    font-size:10px
+    font-size:12px
   }
   .search-form input {
     font-size:12px
   }
   .panel-footnote {
-    font-size:10px
+    font-size:12px
   }
   .meal-description,.privacy-note {
-    font-size:11px
+    font-size:12px
   }
   .nutrient-note {
-    font-size:10px
+    font-size:12px
   }
   .nutrient-card {
     padding:16px
@@ -1236,7 +1236,7 @@ main {
     gap:12px
   }
   .save-indicator {
-    font-size:10px;
+    font-size:12px;
     margin-bottom:14px;
     text-align:left
   }
@@ -1309,7 +1309,7 @@ main {
     margin-bottom:33px
   }
   .journal-notes .journal-limitation {
-    font-size:11px
+    font-size:12px
   }
   .journal-summary {
     font-size:14px
@@ -1370,12 +1370,12 @@ main {
 .getting-started ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; list-style: none; padding: 0; margin: 0; }
 .getting-started li { padding: 18px; background: #fff; border: 1px solid #e0e8dd; border-radius: 7px; }
 .getting-started li[aria-current=step] { border-color: #508161; }
-.getting-started-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; font-size: 11px; border-radius: 50%; background: #eef2e9; color: #42604b; }
+.getting-started-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; font-size: 12px; border-radius: 50%; background: #eef2e9; color: #42604b; }
 .getting-started-number.done { background: #dcebd7; }
 .getting-started h2 { font-size: 14px; margin: 12px 0 8px; }
 .getting-started li p { min-height: 60px; font-size: 12px; line-height: 1.8; color: #5b6a5c; }
 .getting-started button { display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; padding: 6px 0; color: #19573f; font-weight: 600; font-size: 12px; }
-.getting-started li>small { display: block; margin-top: 8px; font-size: 10px; color: #596e5c; }
+.getting-started li>small { display: block; margin-top: 8px; font-size: 12px; color: #596e5c; }
 @media(max-width:700px) { .getting-started { padding: 16px; } .getting-started ol { grid-template-columns: 1fr; } .getting-started li p { min-height: 0; } }
 
 /* 양쪽 햄버거 버튼은 같은 내비게이션의 펼침 상태를 공유한다. */
@@ -1432,7 +1432,7 @@ main {
 .period-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 8px; }
 .period-days button { padding: 10px 6px; border: 1px solid #dce6dc; background: white; border-radius: 6px; min-width: 0; }
 .period-days button.selected { border-color: #19573f; background: #f1f6eb; }
-.period-days b,.period-days span,.period-days small { display: block; font-size: 11px; }
+.period-days b,.period-days span,.period-days small { display: block; font-size: 12px; }
 .period-days button:disabled { color: #7b857f; background: #f8f9f7; }
 .period-bar { height: 5px; background: #edf1e9; margin-top: 9px; border-radius: 4px; overflow: hidden; }
 .period-bar i { height: 5px; background: #558166; display: block; }
@@ -1481,7 +1481,7 @@ main {
  .daily-actions strong { font-size: 18px; }
  .daily-actions p { margin: 8px 0 14px; }
  .mobile-bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: #fff; border-top: 1px solid #dce6dc; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); }
- .mobile-bottom-nav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #657366; border: 0; background: none; padding: 6px; font-size: 11px; }
+ .mobile-bottom-nav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #657366; border: 0; background: none; padding: 6px; font-size: 12px; }
  .mobile-bottom-nav button[aria-current=page] { color: #19573f; background: #f1f6eb; border-radius: 8px; font-weight: 650; }
  .menu-expanded .mobile-bottom-nav { display: none; }
  #main { padding-bottom: 90px; }
@@ -1490,11 +1490,11 @@ main {
 @media(max-width:700px) {
  .daily-actions { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
  .daily-actions article { padding: 13px 10px; }
- .daily-action-icon { gap: 5px; font-size: 11px; }
+ .daily-action-icon { gap: 5px; font-size: 12px; }
  .daily-action-icon svg { width: 16px; height: 16px; }
  .daily-actions strong { display: block; font-size: 12px; min-height: 40px; line-height: 1.7; }
  .daily-actions p { display: none; }
- .daily-actions button { font-size: 10px; gap: 3px; margin-top: 10px; }
+ .daily-actions button { font-size: 12px; gap: 3px; margin-top: 10px; }
  .daily-actions button svg { width: 12px; height: 12px; }
 }
 .weekly-guidance { margin: 24px 0 32px; padding-bottom: 24px; border-bottom: 1px solid #dce6dc; }
@@ -1517,13 +1517,13 @@ main {
 .comparison-table table { border-collapse: collapse; width: 100%; font-size: 12px; }
 .comparison-table td,.comparison-table th { text-align: left; padding: 12px; border-bottom: 1px solid #dce6dc; }
 .comparison-table th[scope=row] { min-width: 200px; max-width: 320px; overflow-wrap: anywhere; }
-.comparison-table small { display: block; color: #647366; font-size: 10px; font-weight: 400; }
+.comparison-table small { display: block; color: #647366; font-size: 12px; font-weight: 400; }
 .comparison-table td { white-space: nowrap; }
 .comparison-pages { display: flex; gap: 14px; align-items: center; justify-content: center; margin-top: 18px; font-size: 12px; }
 .guidance-actions button+button { margin-left: 8px; }
 @media(max-width:700px) { .food-comparison { padding: 16px; } .food-comparison label { min-width: 0; flex-basis: 100%; } }
 .comparison-scroll-hint { display: none; }
-@media(max-width:700px) { .comparison-scroll-hint { display: block; font-size: 11px; color: #647366; } }
+@media(max-width:700px) { .comparison-scroll-hint { display: block; font-size: 12px; color: #647366; } }
 
 /* 회원 탈퇴: 계정 패널 안의 접힌 위험 영역 */
 .account-delete {
@@ -1542,7 +1542,7 @@ main {
 }
 .account-delete .account-delete-note {
   color:#7a857d;
-  font-size:11px
+  font-size:12px
 }
 .account-banner .account-delete form {
   flex-direction:column;
