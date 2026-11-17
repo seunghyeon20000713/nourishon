@@ -1,13 +1,13 @@
 import { formatWithUnit } from './nutrientFormat'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Bike, Dumbbell, Flower2, Footprints, HeartPulse, Timer, Volleyball } from 'lucide-react'
+import { Bike, Dumbbell, Flower2, Footprints, HeartPulse, Mountain, Timer, Volleyball } from 'lucide-react'
 import type { WellnessData } from './Wellness'
 import { today } from './Wellness'
 import { ACTIVITY_GUIDE, activityLabel, intensity } from './activityGuide'
 export type ActivityRecord = { id: string; date: string; age: number; activity_code: string; weight_kg: number; minutes: number; calculation: { name: string; met: number; gross_kcal: number; above_rest_kcal: number; formula: string; version: string; checked_on: string; source_url: string; scope: string } }
 type Activity = { category: string; code: string; name: string; met: number; url: string }
-const CATEGORY_ICONS: Record<string, typeof Bike> = { '걷기': Footprints, '러닝': Timer, '자전거': Bike, '근력·맨몸': Dumbbell, '스트레칭·요가·필라테스': Flower2, '유산소 기구': HeartPulse, '생활 스포츠': Volleyball }
+const CATEGORY_ICONS: Record<string, typeof Bike> = { '걷기': Footprints, '러닝': Timer, '자전거': Bike, '근력·맨몸': Dumbbell, '스트레칭·요가·필라테스': Flower2, '유산소 기구': HeartPulse, '생활 스포츠': Volleyball, '등산·하이킹': Mountain }
 const kcal = (value: number) => formatWithUnit(value, 'kcal')
 
 export function ActivityLog({ data, onChange }: { data: WellnessData; onChange: (data: WellnessData) => void }) {

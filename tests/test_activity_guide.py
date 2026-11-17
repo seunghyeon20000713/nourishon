@@ -20,8 +20,15 @@ class ActivityGuideTests(unittest.TestCase):
     def test_every_server_code_has_plain_name_and_no_extra(self):
         guide_codes = [code for code, _, _ in self.entries]
         self.assertEqual(len(guide_codes), len(set(guide_codes)), '번역표에 중복 코드가 있습니다.')
-        self.assertEqual(len(ACTIVITIES), 25)
+        self.assertEqual(len(ACTIVITIES), 28)
         self.assertEqual(set(guide_codes), set(ACTIVITIES))
+
+    def test_demo_list_matches_server_codes_and_met(self):
+        # 체험판(Sites)은 서버 없이 demoData.json 목록을 쓴다. 코드·MET·분류가 서버와 같아야 한다.
+        import json
+        demo = json.loads((GUIDE.parent / 'demoData.json').read_text(encoding='utf-8'))['activities']
+        self.assertEqual({item['code']: (item['met'], item['category']) for item in demo},
+                         {code: (item['met'], item['category']) for code, item in ACTIVITIES.items()})
 
     def test_plain_names_avoid_imperial_units_and_met(self):
         for code, label, hint in self.entries:

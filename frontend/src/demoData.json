@@ -174,6 +174,27 @@
       "name": "농구 · 슛 연습",
       "met": 5.0,
       "url": "https://pacompendium.com/sports/"
+    },
+    {
+      "code": "17081",
+      "category": "등산·하이킹",
+      "name": "하이킹 · 들판·언덕을 천천히, 짐 없음",
+      "met": 3.8,
+      "url": "https://pacompendium.com/walking/"
+    },
+    {
+      "code": "17082",
+      "category": "등산·하이킹",
+      "name": "하이킹 · 들판·언덕을 보통 속도로, 짐 없음",
+      "met": 5.3,
+      "url": "https://pacompendium.com/walking/"
+    },
+    {
+      "code": "17012",
+      "category": "등산·하이킹",
+      "name": "배낭 하이킹 · 데이팩을 메고 걷기",
+      "met": 7.8,
+      "url": "https://pacompendium.com/walking/"
     }
   ],
   "coefficients": {

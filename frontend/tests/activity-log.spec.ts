@@ -47,8 +47,8 @@ test('러닝·근력 분류 선택과 종목별 계산·기록', async ({ page }
   const form = page.getByRole('form', { name: '실제 운동 계산' })
   await form.getByLabel('운동 당시 나이 (세)', { exact: true }).fill('30')
   await form.getByLabel('운동 당시 체중 (kg)', { exact: true }).fill('70')
-  // 분류 7개, 분류마다 해당 종목만 보인다(전체 25개). 이름은 쉬운 말, 강도는 MET 구분으로 표시.
-  await expect(form.locator('input[name=activity-category]')).toHaveCount(7)
+  // 분류 8개, 분류마다 해당 종목만 보인다(전체 28개, 2026-11-17 등산·하이킹 3개 추가). 이름은 쉬운 말, 강도는 MET 구분으로 표시.
+  await expect(form.locator('input[name=activity-category]')).toHaveCount(8)
   await form.getByText('러닝', { exact: true }).click()
   await expect(form.locator('input[name=activity]')).toHaveCount(4)
   await expect(form.locator('label:has(input[value="12050"])')).toContainText('빠르게 달리기')
@@ -56,6 +56,10 @@ test('러닝·근력 분류 선택과 종목별 계산·기록', async ({ page }
   await expect(form).not.toContainText('mph')
   await form.getByText('근력·맨몸', { exact: true }).click()
   await expect(form.locator('input[name=activity]')).toHaveCount(6)
+  await form.getByText('등산·하이킹', { exact: true }).click()
+  await expect(form.locator('input[name=activity]')).toHaveCount(3)
+  await expect(form.locator('label:has(input[value="17012"])')).toContainText('배낭 메고 등산')
+  await expect(form.locator('label:has(input[value="17012"])')).toContainText('높은 강도')
   // 계산값 297.5·122.5 kcal는 서버 값 그대로, 화면은 kcal 정수 표시 규칙(nutrientFormat.ts, 2026-11-17)
   for (const [category, code, kcal] of [['러닝', '12030', '298'], ['근력·맨몸', '02056', '105'], ['근력·맨몸', '02054', '123']]) {
     await form.getByText(category, { exact: true }).click()

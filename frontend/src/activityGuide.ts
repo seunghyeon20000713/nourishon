@@ -27,6 +27,9 @@ export const ACTIVITY_GUIDE: Record<string, { label: string; hint: string }> = {
   '15660': { label: '탁구', hint: '일반적인 경기' },
   '15610': { label: '축구', hint: '시합이 아닌 친선 경기' },
   '15070': { label: '농구', hint: '슛 연습' },
+  '17081': { label: '천천히 등산·하이킹', hint: '들판·언덕을 천천히, 짐 없이' },
+  '17082': { label: '보통 속도 등산·하이킹', hint: '들판·언덕을 평소 속도로, 짐 없이' },
+  '17012': { label: '배낭 메고 등산', hint: '당일 배낭(데이팩)을 메고 산행' },
 }
 
 // MET 강도 구분: 3 미만 가벼운 강도, 3 이상 6 미만 중간 강도, 6 이상 높은 강도

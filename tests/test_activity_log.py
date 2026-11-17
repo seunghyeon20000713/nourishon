@@ -15,6 +15,8 @@ class ActivityLogTests(unittest.TestCase):
         self.assertEqual(result['calculation']['gross_kcal'], 98)
         self.assertEqual(result['calculation']['above_rest_kcal'], 63)
         self.assertEqual(result['calculation']['met'], 2.8)
+        self.assertEqual(result['calculation']['checked_on'], '2026-11-06')
+        self.assertEqual(calculate_activity(self.record(activity_code='17082'))['calculation']['checked_on'], '2026-11-17')
         self.assertIn('2024', result['calculation']['version'])
         self.assertEqual(calculate_activity(self.record(activity_code='01214'))['calculation']['gross_kcal'], 140)
 
@@ -23,7 +25,9 @@ class ActivityLogTests(unittest.TestCase):
         for code, met, expected in [('12020',7.5,262.5),('12028',6.5,227.5),
                                     ('12030',8.5,297.5),('12050',9.3,325.5),
                                     ('02056',3.0,105),('02054',3.5,122.5),
-                                    ('02050',6.0,210),('15660',4.0,140)]:
+                                    ('02050',6.0,210),('15660',4.0,140),
+                                    # 등산·하이킹(2026-11-17): 공식 MET 3.8·5.3·7.8
+                                    ('17081',3.8,133),('17082',5.3,185.5),('17012',7.8,273)]:
             with self.subTest(code=code):
                 value = calculate_activity(self.record(activity_code=code))['calculation']
                 self.assertEqual(value['met'], met)

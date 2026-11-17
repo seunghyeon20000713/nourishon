@@ -89,3 +89,18 @@
 - 강도 표시: MET 3 미만 가벼운 강도, 3 이상 6 미만 중간 강도, 6 이상 높은 강도(2018 Physical Activity Guidelines Advisory Committee Report의 일반적 구분). 서비스가 강도를 추천하는 것이 아니라 선택한 조건의 분류다.
 - 결과 문구: "총 소모량" → "운동하는 동안 쓴 에너지(가만히 있어도 쓰는 에너지 포함)", "안정 시 제외" → "운동으로 더 쓴 에너지". 값과 계산식은 바뀌지 않았다.
 - 운동 화면 순서: 자주 쓰는 운동 기록을 위로, 한 번 만드는 주간 계획을 아래로 옮겼다. 계획이 생기면 조건 입력 폼은 접힌다.
+
+## 등산·하이킹 추가 (2026-11-17, 지인 피드백)
+
+[Walking](https://pacompendium.com/walking/) 분류의 공식 코드·MET를 그대로 쓴다(2026-11-17 확인). 값을 만들거나 섞지 않는다.
+
+| 코드 · MET | 공식 설명 | 화면 이름 |
+| --- | --- | --- |
+| 17081 · 3.8 | Hiking slowly or ambling through fields and hillsides, no load | 천천히 등산·하이킹 |
+| 17082 · 5.3 | Hiking or walking at a normal pace through fields and hillsides, no load | 보통 속도 등산·하이킹 |
+| 17012 · 7.8 | Backpacking, hiking with a daypack, organized walking with daypack | 배낭 메고 등산 |
+
+- 고른 이유: 사용자가 스스로 구분할 수 있는 조건(속도, 배낭 여부)만 골랐다.
+- 제외: 경사도(%)·짐 무게(lb)·속도(mph)로 나뉜 `Climbing hills`(17032~17060)는 일반 사용자가 판단하기 어렵다. 17010 Backpacking(Taylor Code), 17080 Hiking cross country도 조건 설명이 모호해 제외했다.
+- 한계: 공식 페이지는 추정값을 빨간색으로 표시하는데, 확인 과정에서 색 정보를 읽지 못해 위 세 값이 실측값인지 추정값인지는 확인하지 못했다.
+- 체험판 목록(`frontend/src/demoData.json`)도 서버와 코드·MET·분류가 같은지 테스트로 확인한다.

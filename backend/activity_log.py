@@ -32,6 +32,10 @@ ACTIVITIES = {
     '15660': {'category': '생활 스포츠', 'name': '탁구 · 일반적 수행', 'met': 4.0, 'url': 'https://pacompendium.com/sports/'},
     '15610': {'category': '생활 스포츠', 'name': '축구 · 비경쟁적, 일반적 수행', 'met': 7.0, 'url': 'https://pacompendium.com/sports/'},
     '15070': {'category': '생활 스포츠', 'name': '농구 · 슛 연습', 'met': 5.0, 'url': 'https://pacompendium.com/sports/'},
+    # 등산·하이킹(2026-11-17 확인): Walking 분류의 공식 코드·MET 그대로. 경사도·짐 무게별 'Climbing hills'는 사용자가 판단하기 어려워 제외.
+    '17081': {'category': '등산·하이킹', 'name': '하이킹 · 들판·언덕을 천천히, 짐 없음', 'met': 3.8, 'url': 'https://pacompendium.com/walking/', 'checked_on': '2026-11-17'},
+    '17082': {'category': '등산·하이킹', 'name': '하이킹 · 들판·언덕을 보통 속도로, 짐 없음', 'met': 5.3, 'url': 'https://pacompendium.com/walking/', 'checked_on': '2026-11-17'},
+    '17012': {'category': '등산·하이킹', 'name': '배낭 하이킹 · 데이팩을 메고 걷기', 'met': 7.8, 'url': 'https://pacompendium.com/walking/', 'checked_on': '2026-11-17'},
 }
 
 
@@ -68,6 +72,6 @@ def calculate_activity(record: ActivityRecord) -> dict:
         'gross_kcal': round(activity['met'] * factor, 2),
         'above_rest_kcal': round((activity['met'] - 1) * factor, 2),
         'formula': '총 소모량 ≈ MET × 체중(kg) × 시간(분) ÷ 60; 안정 시 제외 ≈ (MET−1) × 체중 × 시간 ÷ 60',
-        'version': VERSION, 'checked_on': '2026-11-06', 'source_url': activity['url'],
+        'version': VERSION, 'checked_on': activity.get('checked_on', '2026-11-06'), 'source_url': activity['url'],
         'scope': '19~59세 일반 성인 표준 MET 참고값. 개인 실측·감량 보장·필수 운동량이 아닙니다.',
     }}
