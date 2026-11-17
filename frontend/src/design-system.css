@@ -109,3 +109,14 @@ body, .app-shell { background: var(--c-bg); color: var(--c-text); }
 .journal-dashboard .journal-columns { align-items: start; }
 .journal-dashboard .journal-notes { margin-top: 0; align-self: start; }
 .journal-dashboard .journal-columns>.journal-analysis>.journal-summary { padding-top: 0; }
+
+/* 9. 모바일 측정 기록 표: 가로로 잘리지 않게 칸을 줄인다(단위는 둘째 줄, 연도 숨김) */
+.body-recent thead th small { font-size: inherit; }
+@media (max-width: 700px) {
+  .journal-dashboard .body-recent table { min-width: 0; table-layout: fixed; }
+  .journal-dashboard .body-recent th, .journal-dashboard .body-recent td { padding: 8px 4px; white-space: normal; font-size: var(--fs-xs); }
+  .journal-dashboard .body-recent thead th { line-height: 1.35; vertical-align: bottom; }
+  .journal-dashboard .body-recent thead th small { display: block; }
+  .journal-dashboard .body-recent thead th:first-child, .journal-dashboard .body-recent tbody th { text-align: left; width: 22%; }
+  .journal-dashboard .body-recent .table-year { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

@@ -39,6 +39,16 @@ test('개인 기록장: 실제 측정·날짜 비교·요약·이동·반응형'
  await page.getByRole('button',{name:'왼쪽 메뉴 펼치기',exact:true}).click()
  await page.setViewportSize({width:390,height:844})
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+ // 모바일 측정 기록 표는 가로로 잘리지 않고 다섯 칸이 모두 보인다(2026-11-17).
+ for(const width of [390,360]){
+  await page.setViewportSize({width,height:844})
+  await expect.poll(()=>page.locator('.body-table-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
+  const last=page.locator('.body-recent thead th').nth(4)
+  await last.scrollIntoViewIfNeeded()
+  const box=(await last.boundingBox())!
+  expect(box.x+box.width).toBeLessThanOrEqual(width)
+ }
+ await page.setViewportSize({width:390,height:844})
  await page.screenshot({path:'/tmp/nourishon-journal-v2-mobile.png',fullPage:true})
  // 지난 날짜(2026-11-06)는 '식사 기록 보기' → 기록 관리, 오늘 날짜는 '식사 기록하기' → 식사 기록.
  // 고정 날짜만 쓰면 날짜가 지나며 버튼 이름이 바뀌어 테스트가 깨지므로 두 경우를 모두 확인한다(2026-11-17 수정).
