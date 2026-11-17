@@ -109,6 +109,7 @@ class FakeProviderTests(unittest.TestCase):
         self.assertEqual(reply.tool_calls[0]['args'], {'start': '2026-11-17', 'end': '2026-11-17'})
         self.assertIn('55 g', reply.text)
         self.assertIn('56 g', reply.text)
+        self.assertIn('어제(2026-11-17) 1일 중 1일', reply.text)   # 하루면 날짜 하나만
         fiber = self.ask('이번 주 식이섬유는?')
         self.assertIn('정보가 빠진 항목이 1개', fiber.text)  # 결측이 있으면 판단하지 않는다고 말한다
         self.assertIn('판단하지 않아요', fiber.text)

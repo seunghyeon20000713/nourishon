@@ -93,12 +93,13 @@ class FakeProvider:
             return result
 
         period = {'start': start.isoformat(), 'end': end.isoformat()}
+        span = f'{label}({start})' if start == end else f'{label}({start}~{end})'
         if topic == 'activity':
             data = call('get_activity_summary', period)
             if not data['record_count']:
-                text = f'{label}({start}~{end})에는 운동 기록이 없어요. 기록하지 않은 날을 운동 0분으로 보지는 않아요.'
+                text = f'{span}에는 운동 기록이 없어요. 기록하지 않은 날을 운동 0분으로 보지는 않아요.'
             else:
-                text = (f"{label}({start}~{end}) {data['days_in_period']}일 중 {data['active_days']}일, 운동 {data['record_count']}건을 기록했어요. "
+                text = (f"{span} {data['days_in_period']}일 중 {data['active_days']}일, 운동 {data['record_count']}건을 기록했어요. "
                         f"총 {fmt(data['total_minutes'], '분').replace(' 분', '분')}, 표준 MET 기준 추정 {fmt(data['gross_kcal_estimate'], 'kcal')}예요. "
                         '개인 실측값이 아니며, 식사 열량에서 자동으로 빼지 않아요.')
             return Reply(text, self.name, calls)
@@ -106,9 +107,9 @@ class FakeProvider:
         data = call('get_period_nutrition', period)
         nutrient = data['totals'][topic]
         average = data['recorded_day_averages'][topic]
-        days = f"{label}({start}~{end}) {data['days_in_period']}일 중 {data['recorded_days']}일 기록"
+        days = f"{span} {data['days_in_period']}일 중 {data['recorded_days']}일 기록"
         if not data['recorded_days']:
-            text = f'{label}({start}~{end})에는 식사 기록이 없어요. 기록하지 않은 날은 0으로 계산하지 않아서 판단할 수 없어요.'
+            text = f'{span}에는 식사 기록이 없어요. 기록하지 않은 날은 0으로 계산하지 않아서 판단할 수 없어요.'
         elif nutrient['value'] is None:
             text = f"{days}했지만 {nutrient['label']} 정보가 있는 음식이 없어요(누락 {nutrient['missing_count']}개). 정보가 없어서 판단하지 않아요."
         else:

@@ -30,5 +30,6 @@ test('첫 이용 안내가 프로필 계산과 첫 식사 기록을 반영한다
   await guide.locator('summary').click()
   await expect(guide.locator('summary')).toContainText('3 / 3 단계')
   await page.setViewportSize({ width: 390, height: 844 })
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  // 창 크기를 바꾼 직후에는 그래프·레이아웃이 다시 계산되는 중이라 기다렸다가 확인한다(간헐 실패 수정, 2026-11-17).
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })

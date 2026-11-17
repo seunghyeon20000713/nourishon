@@ -3,6 +3,7 @@ import { Account } from './Account'
 import type { Session } from './Account'
 import { useServerProfiles } from './serverProfiles'
 import { Exercise } from './Exercise'
+import { Assistant } from './Assistant'
 import { Profile, History, Insights, today } from './Wellness'
 import { useLocalProfiles } from './localProfiles'
 const Dashboard = lazy(()=>import('./Dashboard').then(m=>({default:m.Dashboard})))
@@ -11,7 +12,7 @@ import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import type { FormEvent } from 'react'
 import { Menu, X, Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight,
   CircleAlert, CircleHelp, Flame, Leaf, LoaderCircle, Plus, Salad, Search,
-  ShieldCheck, Trash2, UserRound, Utensils, ChartColumn, CalendarDays, TrendingUp, Settings, ChevronDown, SlidersHorizontal } from 'lucide-react'
+  ShieldCheck, Trash2, UserRound, Utensils, ChartColumn, CalendarDays, TrendingUp, Settings, ChevronDown, SlidersHorizontal, MessageCircle } from 'lucide-react'
 
 type Food = { food_code: string; food_name: string; basis: string;
   source_name: string | null; updated_date: string | null }
@@ -163,7 +164,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
       <button className="rail-logo" aria-label="NourishOn 소개 화면으로 이동" onClick={()=>{setMenuOpen(false);window.location.hash='intro'}}><img src="/brand/nourishon-mark.png" alt=""/></button>
       <button ref={menuToggle} className="menu-toggle rail-menu-toggle" aria-label="왼쪽 메뉴 펼치기" aria-expanded={menuOpen} aria-controls="workspace-navigation" onClick={()=>setMenuOpen(open=>!open)}>{menuOpen?<X size={23}/>:<Menu size={23}/>}</button>
       <nav id="workspace-navigation" aria-label="주 메뉴">
-        {([['dashboard','영양 대시보드',ChartColumn],['meal','식사 분석',Utensils],['history','기록과 분석',CalendarDays],['insights','생활 개선',TrendingUp],['exercise','운동 계획',Activity],['profile','내 몸과 목표',UserRound]] as const).map(([key,label,Icon])=><button key={key} className={`nav-item ${view===key?'active':''}`} aria-label={label} title={label} aria-current={view===key?'page':undefined} onClick={()=>{setView(key);setMenuOpen(false)}}><Icon size={23}/><span>{{dashboard:'오늘',meal:'식사 기록',history:'기록 관리',insights:'분석',exercise:'운동',profile:'내 정보'}[key]}</span></button>)}
+        {([['dashboard','영양 대시보드',ChartColumn],['meal','식사 분석',Utensils],['history','기록과 분석',CalendarDays],['insights','생활 개선',TrendingUp],['exercise','운동 계획',Activity],['assistant','건강 비서',MessageCircle],['profile','내 몸과 목표',UserRound]] as const).map(([key,label,Icon])=><button key={key} className={`nav-item ${view===key?'active':''}`} aria-label={label} title={label} aria-current={view===key?'page':undefined} onClick={()=>{setView(key);setMenuOpen(false)}}><Icon size={23}/><span>{{dashboard:'오늘',meal:'식사 기록',history:'기록 관리',insights:'분석',exercise:'운동',assistant:'건강 비서',profile:'내 정보'}[key]}</span></button>)}
       </nav>
       <button className="rail-settings" aria-label="계정 설정" title="계정 설정" onClick={()=>{const el=document.getElementById('account-tools') as HTMLDetailsElement|null;if(el){el.open=!el.open;el.querySelector('summary')?.focus()}}}><Settings size={22}/></button>
     </aside>
@@ -181,6 +182,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
       {session.user&&<div className={`save-indicator ${storageError?'save-error':''}`} role="status">{serverProfiles.saving?"기록 저장 중…":serverProfiles.loading?"기록 불러오는 중…":storageError?storageError:"계정 기록 · 저장 완료"}{storageError&&<button disabled={serverProfiles.saving>0} onClick={()=>{if(window.confirm("현재 화면의 임시 변경을 버리고 저장된 기록을 다시 불러올까요?"))void serverProfiles.reload()}}>서버 기록 다시 불러오기</button>}</div>}
       {view==='dashboard'&&<Suspense fallback={<p role="status">영양 대시보드 불러오는 중…</p>}><Dashboard data={data} onView={(v,day)=>{if(day)setHistoryDay(day);setView(v==='activity'?'exercise':v);if(v==='activity')requestAnimationFrame(()=>{const heading=document.getElementById('activity-log-title');heading?.scrollIntoView({block:'start'});heading?.focus({preventScroll:true})})}} onMeal={kind=>{setMealKind(kind);setMealDate(today());setSaved(false);setView('meal')}}/></Suspense>}
       {view==='exercise'&&<Exercise key={activeId} data={data} onChange={setData} session={session} profileId={activeId}/>}
+      {view==='assistant'&&<Assistant key={activeId} session={session} profileId={activeId}/>}
       {view==='profile'&&<Profile key={activeId} data={data} onChange={setData}/>}
       {view==='history'&&<History key={`${activeId}-${historyDay}`} initialDay={historyDay} data={data} onChange={setData}/>}
       {view==='insights'&&<Insights key={activeId} data={data} onView={setView} onAddFood={food=>{addFood(food);setView('meal');window.scrollTo(0,0)}}/>}
