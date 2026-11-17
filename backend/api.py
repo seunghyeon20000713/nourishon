@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Query
 import psycopg
 from backend.activity_log import ACTIVITIES, ActivityRecord, calculate_activity
 from backend.accounts import router as account_router, Measurement
+from backend.assistant import router as assistant_router
 from backend.database import database_url as read_database_url, connect
 from backend.settings import Settings, load_settings
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -144,6 +145,7 @@ def create_app(data_path: Path | None = None, rows: list[dict] | None = None, da
     if settings.mode == 'staging':
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
     app.include_router(account_router)
+    app.include_router(assistant_router)
 
     @app.middleware("http")
     async def private_response(request, call_next):
@@ -151,7 +153,7 @@ def create_app(data_path: Path | None = None, rows: list[dict] | None = None, da
         root = request.scope.get('root_path', '')
         if root and path.startswith(root):
             path = path[len(root):]
-        private = path.startswith(("/auth/", "/account/", "/nutrition/", "/measurements/", "/activities/", "/profile/", "/meals/"))
+        private = path.startswith(("/auth/", "/account/", "/assistant/", "/nutrition/", "/measurements/", "/activities/", "/profile/", "/meals/"))
         if private and request.method in {"POST", "PUT", "PATCH"}:
             chunks, size = [], 0
             async for chunk in request.stream():
@@ -182,7 +184,7 @@ def create_app(data_path: Path | None = None, rows: list[dict] | None = None, da
                 raise ValueError
             with connect(app.state.database_url) as conn:
                 versions = {row['version'] for row in conn.execute('SELECT version FROM schema_migrations')}
-                if not {1, 2}.issubset(versions):
+                if not {1, 2, 3}.issubset(versions):
                     raise ValueError
                 conn.execute('SELECT activity_records FROM profiles LIMIT 0')
             return {'status': 'ready'}
