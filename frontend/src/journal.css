@@ -1635,3 +1635,10 @@ main {
   /* 계정 버튼은 상단 바와 함께 고정하고 상단 바보다 앞에 둔다(덮이지 않게) */
   .account-tools { position:fixed; top:calc(var(--notice-h,0px) + 19px); right:104px; z-index:55 }
 }
+/* 모바일 계정 패널: 버튼(오른쪽에서 104px)에 맞춰 펼치면 왼쪽 밖으로 54px 잘리므로(390px 실측)
+   화면 양쪽 12px 여백 안에, 상단 바 바로 아래에 고정한다(2026-11-17). */
+@media(max-width:700px) {
+  .account-tools .account-banner { position:fixed; left:12px; right:12px; top:calc(var(--notice-h,0px) + 62px); width:auto; max-width:none; max-height:calc(100vh - var(--notice-h,0px) - 140px); overflow:auto }
+  /* 기록 설정 패널도 같은 자리에: 상단 바로 옮긴 버튼을 패널이 덮어 다시 눌러 닫을 수 없던 문제 */
+  .profile-tools .profile-popup { position:fixed; left:12px; right:12px; top:calc(var(--notice-h,0px) + 62px); width:auto; max-width:none; max-height:calc(100vh - var(--notice-h,0px) - 140px); overflow:auto }
+}
