@@ -120,3 +120,9 @@ body, .app-shell { background: var(--c-bg); color: var(--c-text); }
   .journal-dashboard .body-recent thead th:first-child, .journal-dashboard .body-recent tbody th { text-align: left; width: 22%; }
   .journal-dashboard .body-recent .table-year { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
+
+/* 10. 계산 결과로 이동할 때 고정 상단 바에 제목이 가리지 않게 */
+#analysis-title { scroll-margin-top: calc(var(--notice-h, 0px) + 24px); }
+#analysis-title:focus { outline: none; }
+#analysis-title:focus-visible { outline: 3px solid #7aab90; outline-offset: 4px; }
+@media (max-width: 700px) { #analysis-title { scroll-margin-top: calc(var(--notice-h, 0px) + 76px); } }

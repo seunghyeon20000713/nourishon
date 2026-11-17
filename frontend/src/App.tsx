@@ -117,6 +117,19 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
     changeEntries([...entries, { food, grams: '100' }]); return true
   }
 
+  // 계산이 끝나면 결과 제목으로 이동하고 포커스를 옮긴다(결과가 아래에 있어 안 보이던 문제, 2026-11-17).
+  // '동작 줄이기' 설정이면 부드러운 스크롤 없이 바로 이동한다.
+  const showResult = useRef(false)
+  useEffect(() => {
+    if (!calculation || !showResult.current) return
+    showResult.current = false
+    const heading = document.getElementById('analysis-title')
+    if (!heading) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    heading.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    heading.focus({ preventScroll: true })
+  }, [calculation])
+
   async function calculate() {
     if (!entries.length) return
     if (entries.some(e => !e.grams.trim() || !Number.isFinite(Number(e.grams)) || Number(e.grams) < 0)) {
@@ -133,7 +146,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
       })
       if (!response.ok) throw new Error()
       const data: Calculation = await response.json()
-      if (!controller.signal.aborted) setCalculation(data)
+      if (!controller.signal.aborted) { setCalculation(data); showResult.current = true }
     } catch {
       if (!controller.signal.aborted) setCalculationError('계산을 완료하지 못했어요. 입력과 연결 상태를 확인한 뒤 다시 시도해주세요.')
     } finally {
@@ -223,7 +236,7 @@ function Workspace({session,onPending}:{session:Session;onPending:(n:number)=>vo
       </div>
 
       <section className="analysis-section" aria-labelledby="analysis-title" aria-live="polite">
-        <div className="analysis-heading"><div><span className="section-eyebrow">A CLOSER LOOK AT YOUR MEAL</span><h2 id="analysis-title">한 끼에 담긴 영양</h2></div><span><CircleHelp size={15} /> 목표량 대비 평가가 아닌 섭취량 계산이에요.</span></div>
+        <div className="analysis-heading"><div><span className="section-eyebrow">A CLOSER LOOK AT YOUR MEAL</span><h2 id="analysis-title" tabIndex={-1}>한 끼에 담긴 영양</h2></div><span><CircleHelp size={15} /> 목표량 대비 평가가 아닌 섭취량 계산이에요.</span></div>
         {!calculation && <p className="analysis-placeholder">음식을 담고 ‘영양 합계 계산’을 누르면 아래에 결과가 나타나요.</p>}
         {hasMissing && <div className="missing-banner"><CircleAlert size={17} /><span>일부 성분 정보가 없어요. 누락된 값은 0으로 채우지 않고, 확인된 값만 합산했어요.</span></div>}
         <div className="nutrient-grid">{nutrientLabels.map(([key, label]) => {
