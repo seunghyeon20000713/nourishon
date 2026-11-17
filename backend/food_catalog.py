@@ -6,7 +6,7 @@ from contextlib import closing
 from itertools import tee
 from pathlib import Path
 
-from backend.food_search import _normalize_name
+from backend.food_search import match_key, query_terms
 from backend.food_comparison import compare_foods
 from backend.meal import calculate_meal
 
@@ -73,14 +73,15 @@ class DiskFoodCatalog:
         try:
             with closing(sqlite3.connect(self.path)) as connection:
                 connection.execute('PRAGMA cache_size=-2048')
-                connection.execute('CREATE TABLE foods (position INTEGER PRIMARY KEY, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, payload TEXT NOT NULL)')
+                connection.execute('CREATE TABLE foods (position INTEGER PRIMARY KEY, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, kind INTEGER NOT NULL, payload TEXT NOT NULL)')
                 with connection:
                     for index, row in enumerate(iter_food_rows(path), 1):
                         code = row['FOOD_CD']
                         if not isinstance(code, str) or not code or row['NUT_CON_SRTR_QUA'] != '100g':
                             raise ValueError('식품코드 또는 기준량이 잘못됐습니다.')
-                        connection.execute('INSERT INTO foods VALUES (?,?,?,?)',
-                                           (index, code, _normalize_name(row['FOOD_NM']), json.dumps(row, ensure_ascii=False, allow_nan=False)))
+                        # name은 띄어쓰기·구분자를 뺀 비교용 키, kind는 음식(D)0·원재료(R)1·가공식품2 (backend.food_search.search_rank와 같은 규칙)
+                        connection.execute('INSERT INTO foods VALUES (?,?,?,?,?)',
+                                           (index, code, match_key(row['FOOD_NM']), {'D':0,'R':1}.get(code[:1],2), json.dumps(row, ensure_ascii=False, allow_nan=False)))
                         self.count = index
                 if not self.count or self.count != expected_count:
                     raise ValueError('식품 개수가 완료 보고서와 다릅니다.')
@@ -98,17 +99,28 @@ class DiskFoodCatalog:
         return connection
 
     @staticmethod
-    def _keyword(query):
-        keyword = _normalize_name(query)
-        if not keyword:
+    def _terms(query):
+        terms = query_terms(query)
+        if not terms:
             raise ValueError('검색어를 입력해주세요.')
-        return keyword
+        # 검색어는 최대 100자라 단어 수도 제한된다. SQL에는 단어 수만큼 ? 자리만 만들고 값은 항상 바인딩한다.
+        return terms[:20]
+
+    @staticmethod
+    def _where(terms):
+        return ' AND '.join(['instr(name,?)>0'] * len(terms))
 
     def search(self, query: str, offset: int, limit: int) -> dict:
-        keyword = self._keyword(query)
+        terms = self._terms(query)
+        joined = ''.join(terms)
+        where = self._where(terms)
         with closing(self._connect()) as connection:
-            total = connection.execute('SELECT count(*) FROM foods WHERE instr(name,?)>0', (keyword,)).fetchone()[0]
-            selected = connection.execute('SELECT payload FROM foods WHERE instr(name,?)>0 ORDER BY position LIMIT ? OFFSET ?', (keyword, limit, offset))
+            total = connection.execute(f'SELECT count(*) FROM foods WHERE {where}', terms).fetchone()[0]
+            # 순서: 이름이 같음 → 검색어로 시작 → 포함, 같은 단계는 음식→원재료→가공식품, 짧은 이름, 원본 순서
+            selected = connection.execute(
+                f'SELECT payload FROM foods WHERE {where} '
+                'ORDER BY CASE WHEN name=? THEN 0 WHEN substr(name,1,length(?))=? THEN 1 ELSE 2 END, kind, length(name), position '
+                'LIMIT ? OFFSET ?', (*terms, joined, joined, joined, limit, offset))
             items = []
             for (payload,) in selected:
                 row = json.loads(payload)
@@ -117,10 +129,10 @@ class DiskFoodCatalog:
         return {'total':total, 'offset':offset, 'limit':limit, 'items':items}
 
     def compare(self, query: str, focus: str, offset: int, limit: int):
-        keyword = self._keyword(query)
+        terms = self._terms(query)
         with closing(self._connect()) as connection:
             # 기존 비교 함수를 재사용해 숫자·결측·동점 순서 규칙을 유지한다.
-            cursor = connection.execute('SELECT payload,name FROM foods WHERE instr(name,?)>0 ORDER BY position', (keyword,))
+            cursor = connection.execute(f'SELECT payload,name FROM foods WHERE {self._where(terms)} ORDER BY position', terms)
             left, right = tee(cursor)
             result = compare_foods((json.loads(row[0]) for row in left), (row[1] for row in right), query, focus, offset, limit)
             for food in result['items']:

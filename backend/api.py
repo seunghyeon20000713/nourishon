@@ -17,7 +17,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from backend.food_search import _normalize_name
+from backend.food_search import match_key, matches_terms, query_terms, search_rank
 from backend.food_comparison import compare_foods
 from backend.food_catalog import DiskFoodCatalog
 from backend.meal import calculate_meal
@@ -70,7 +70,7 @@ class FoodCatalog:
             if not code or code in self.by_code or row["NUT_CON_SRTR_QUA"] != "100g":
                 raise ValueError("식품코드 또는 기준량이 잘못됐습니다.")
             self.by_code[code] = (index, row)
-            self.names.append(_normalize_name(row["FOOD_NM"]))
+            self.names.append(match_key(row["FOOD_NM"]))
 
     @property
     def count(self):
@@ -80,20 +80,21 @@ class FoodCatalog:
         return compare_foods(self.rows, self.names, query, focus, offset, limit)
 
     def search(self, query: str, offset: int, limit: int) -> dict:
-        keyword = _normalize_name(query)
-        if not keyword:
+        terms = query_terms(query)
+        if not terms:
             raise ValueError("검색어를 입력해주세요.")
-        items, total = [], 0
-        for row, name in zip(self.rows, self.names):
-            if keyword not in name:
-                continue
-            if offset <= total < offset + limit:
-                items.append({"food_code": row["FOOD_CD"], "food_name": row["FOOD_NM"],
-                              "basis": "100g", "source_name": row["SRC_NM"],
-                              "reference_date": row["CRTR_YMD"],
-                              "updated_date": row.get("UPDATE_DATE")})
-            total += 1
-        return {"total": total, "offset": offset, "limit": limit, "items": items}
+        # 일치하는 것만 모은 뒤 순위대로 정렬한다(같은 순위는 원본 순서 유지).
+        found = sorted((search_rank(terms, name, row["FOOD_CD"]), index)
+                       for index, (row, name) in enumerate(zip(self.rows, self.names))
+                       if matches_terms(terms, name))
+        items = []
+        for _, index in found[offset:offset + limit]:
+            row = self.rows[index]
+            items.append({"food_code": row["FOOD_CD"], "food_name": row["FOOD_NM"],
+                          "basis": "100g", "source_name": row["SRC_NM"],
+                          "reference_date": row["CRTR_YMD"],
+                          "updated_date": row.get("UPDATE_DATE")})
+        return {"total": len(found), "offset": offset, "limit": limit, "items": items}
 
     def meal(self, entries: list[dict]) -> dict:
         selected = {}

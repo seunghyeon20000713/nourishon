@@ -10,16 +10,42 @@ def _normalize_name(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).casefold().split())
 
 
+# 이름 비교용 키: 띄어쓰기·밑줄·쉼표·가운뎃점을 무시한다.
+# 원본 이름은 "김치찌개_돼지고기", "귀리, 오트밀"처럼 구분자가 섞여 있어 사용자가 띄어 쓰면 찾지 못했다(2026-11-17).
+_IGNORED = str.maketrans("", "", "_,·")
+
+
+def match_key(value: str) -> str:
+    return "".join(unicodedata.normalize("NFKC", value).casefold().translate(_IGNORED).split())
+
+
+def query_terms(query: str) -> list[str]:
+    """검색어를 단어로 나눈다. 모든 단어가 이름에 들어 있어야 일치로 본다."""
+    return [term for term in (match_key(word) for word in unicodedata.normalize("NFKC", query).casefold().split()) if term]
+
+
+def matches_terms(terms: list[str], key: str) -> bool:
+    return all(term in key for term in terms)
+
+
+def search_rank(terms: list[str], key: str, food_code: str) -> tuple[int, int, int]:
+    """보여줄 순서: 이름이 같음 → 검색어로 시작 → 포함, 같은 단계는 음식(D) → 원재료(R) → 가공식품(P), 짧은 이름 먼저."""
+    joined = "".join(terms)
+    tier = 0 if key == joined else 1 if key.startswith(joined) else 2
+    kind = {"D": 0, "R": 1}.get(food_code[:1], 2)
+    return tier, kind, len(key)
+
+
 def search_foods(rows: list[dict], query: str) -> list[dict]:
     """이름 부분 일치로 검색한다. 빈 검색어는 거부하고 원본 순서를 유지한다."""
     if not isinstance(query, str):
         raise TypeError("검색어는 문자열이어야 합니다.")
-    keyword = _normalize_name(query)
-    if not keyword:
+    terms = query_terms(query)
+    if not terms:
         raise ValueError("검색어를 입력해야 합니다.")
     return [dict(row) for row in rows
             if row["NUT_CON_SRTR_QUA"] == "100g"
-            and keyword in _normalize_name(row["FOOD_NM"])]
+            and matches_terms(terms, match_key(row["FOOD_NM"]))]
 
 
 def select_food(rows: list[dict], food_code: str) -> dict:

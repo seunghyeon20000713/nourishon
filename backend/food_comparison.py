@@ -1,18 +1,18 @@
 """검색한 100g 기준 식품 안에서 성분 값을 비교한다. 개인 적합성 추천 아님."""
 import heapq
 import math
-from backend.food_search import _normalize_name
+from backend.food_search import matches_terms, query_terms
 from backend.prepare_food_sample import prepare_sample
 
 FIELDS = {'protein': ('PROT', True), 'fiber': ('FIBTG', True), 'sodium': ('NAT', False)}
 
 
 def compare_foods(rows, names, query: str, focus: str, offset: int, limit: int):
-    keyword = _normalize_name(query)
-    if not keyword or focus not in FIELDS:
+    terms = query_terms(query)
+    if not terms or focus not in FIELDS:
         raise ValueError('검색어와 비교 성분을 확인하세요.')
     field, descending = FIELDS[focus]
-    matches = ((index, row) for index, (row, name) in enumerate(zip(rows, names)) if row["NUT_CON_SRTR_QUA"] == "100g" and keyword in name)
+    matches = ((index, row) for index, (row, name) in enumerate(zip(rows, names)) if row["NUT_CON_SRTR_QUA"] == "100g" and matches_terms(terms, name))
     total = 0
     def ordered():
         nonlocal total

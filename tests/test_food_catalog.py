@@ -29,7 +29,12 @@ class DiskCatalogTests(unittest.TestCase):
         self.temp.cleanup()
 
     def test_search_comparison_meal_exact_results(self):
-        for query in ['두부',' abc  연습 ','없음','%','_','ＡＢＣ']:
+        # 구분자(_ , ·)만 있는 검색어는 빈 검색어와 같다(2026-11-17 띄어쓰기 무시 검색). 두 저장 방식 모두 같은 오류.
+        for query in ['_',' , ','·']:
+            for catalog in [self.catalog,self.reference]:
+                with self.assertRaises(ValueError):catalog.search(query,0,2)
+                with self.assertRaises(ValueError):catalog.compare(query,'protein',0,2)
+        for query in ['두부',' abc  연습 ','없음','%','ＡＢＣ','두 부','연습 두부']:
             for offset in [0,1,3,99]:
                 self.assertEqual(self.catalog.search(query,offset,2),self.reference.search(query,offset,2))
                 for focus in ['protein','fiber','sodium']:
