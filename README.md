@@ -10,6 +10,8 @@
 
 모바일 첫 화면(390px, 스크롤 전) 디자인 개선 과정: 현재 → A(첫 화면 정리) → B(카드형·공통 디자인 규칙). [점검과 개선 기록](docs/design/redesign-2026-11/README.md)
 
+프로젝트 전체를 한 장으로 보려면 [NourishOn 한눈에 보기](docs/project-overview.md)를 참고하세요.
+
 ## 바로 사용해 보기
 
 | 링크 | 내용 |
